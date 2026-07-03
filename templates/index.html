@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="mb-4">
+    <h2>Weekly Quest Program</h2>
+    <p>Browse available adventures and secure your party role.</p>
+    
+    <form method="GET" action="{{ url_for('index') }}" class="row g-3 bg-light p-3 rounded">
+        <div class="col-md-3">
+            <label for="day" class="form-label">Day</label>
+            <select name="day" id="day" class="form-select">
+                <option value="">All Days</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="quest_type" class="form-label">Quest Type</label>
+            <select name="quest_type" id="quest_type" class="form-select">
+                <option value="">All Types</option>
+                <option value="combat">Combat</option>
+                <option value="exploration">Exploration</option>
+                <option value="stealth">Stealth</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="difficulty" class="form-label">Difficulty</label>
+            <select name="difficulty" id="difficulty" class="form-select">
+                <option value="">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="legendary">Legendary</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter Schedule</button>
+        </div>
+    </form>
+</section>
+
+<section>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for session in sessions %}
+            <article class="col">
+                <div class="card h-100 shadow-sm quest-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ session.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {{ session.day }} at {{ session.start_time }} | {{ session.location }}
+                        </h6>
+                        <ul class="list-unstyled mt-3">
+                            <li><strong>Type:</strong> <span class="badge bg-secondary">{{ session.quest_type|capitalize }}</span></li>
+                            <li><strong>Difficulty:</strong> {{ session.difficulty|capitalize }}</li>
+                            <li><strong>Duration:</strong> {{ session.duration }} minutes</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-dark mt-2">View Details & Join</a>
+                    </div>
+                </div>
+            </article>
+        {% else %}
+            <p class="text-muted">No quest sessions match your current filters.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
