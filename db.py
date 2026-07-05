@@ -1,6 +1,6 @@
 import sqlite3
 from model import User
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 """
 this function will connect the database and return conn.
@@ -18,7 +18,6 @@ def get_db_connection():
 
 
 ## to be implemented again
-
 def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None):
     """Fetches sessions joined with quest info, applying optional filters."""
     conn = get_db_connection()
@@ -63,15 +62,56 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None)
     return sessions
 
 
-"""Fetches a user from the database and returns a User object."""
+"""This function fetches a user from the database and returns a User object."""
 def get_user_by_id(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = 'SELECT * FROM users WHERE id = ?'
-    cursor.execute(query, user_id)
+    cursor.execute(query, (user_id,))
     user_row = cursor.fetchone()
     conn.close()
     
     if user_row:
         return User(id=user_row['id'], username=user_row['username'], role=user_row['role'])
+    return None
+
+
+# to be completed to meet only one GM constraint
+"""This Function hashes the password and inserts a new user into the database."""
+def create_user(username, password, role):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = 'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)'
+    # Securely hash the password before saving
+    hashed_password = generate_password_hash(password)
+    
+    try:
+        cursor.execute(query, (username, hashed_password, role))
+        conn.commit()
+        success = True
+    except Exception as e:
+        print('ERROR', str(e)) # to be completed
+        # if something goes wrong: rollback
+        conn.rollback()
+
+    cursor.close()
+    conn.close()
+
+        
+    return success
+
+"""This functuin checks if a user exists and the password is correct."""
+# domething to be completed here
+def verify_user(username, password):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = 'SELECT * FROM users WHERE username = ?'
+    cursor.execute(query, (username,))
+    user_row = cursor.fetchone()
+    conn.close()
+
+    # If the user exists AND the provided password matches the stored hash
+    if user_row and check_password_hash(user_row['password_hash'], password):
+        return User(id=user_row['id'], username=user_row['username'], role=user_row['role'])
+    
     return None
