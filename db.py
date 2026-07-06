@@ -243,3 +243,53 @@ def cancel_participation(participation_id, user_id):
                  (participation_id, user_id))
     conn.commit()
     conn.close()
+
+
+"""Guild Master dashnpard related"""
+
+def get_gm_dashboard_stats():
+    """Fetches all sessions and aggregates participation stats per session."""
+    conn = get_db_connection()
+    
+    # We use LEFT JOIN so sessions with 0 participants still show up.
+    # COALESCE ensures we get 0 instead of NULL when no one has joined.
+    query = '''
+        SELECT 
+            q.QId, q.title, 
+            s.SId, s.day, s.start_time, s.location,
+            COALESCE(SUM(p.places_reserved), 0) as total_reserved,
+            COALESCE(SUM(CASE WHEN p.party_role = 'Warrior' THEN p.places_reserved ELSE 0 END), 0) as warrior_res,
+            COALESCE(SUM(CASE WHEN p.party_role = 'Mage' THEN p.places_reserved ELSE 0 END), 0) as mage_res,
+            COALESCE(SUM(CASE WHEN p.party_role = 'Healer' THEN p.places_reserved ELSE 0 END), 0) as healer_res
+        FROM quests q
+        JOIN sessions s ON q.QId = s.QId
+        LEFT JOIN participations p ON s.SId = p.SId
+        GROUP BY s.SId
+        ORDER BY q.title, 
+        CASE s.day
+            WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7
+        END, s.start_time
+    '''
+    stats = conn.execute(query).fetchall()
+    conn.close()
+    return stats
+
+def cancel_session_if_empty(session_id):
+    """Deletes a session strictly if zero adventurers have joined it."""
+    conn = get_db_connection()
+    
+    # Check participant count first
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) as count FROM participations WHERE SId = ?', (session_id,))
+    count = cursor.fetchone()['count']
+    
+    if count > 0:
+        conn.close()
+        return False # Cannot cancel
+        
+    # Safe to delete
+    cursor.execute('DELETE FROM sessions WHERE SId = ?', (session_id,))
+    conn.commit()
+    conn.close()
+    return True

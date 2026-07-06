@@ -9,6 +9,8 @@ from flask_login import (
 from datetime import datetime, timedelta
 import db
 import util
+
+
 app = Flask(__name__)
 
 # Required by Flask for session management
@@ -145,7 +147,7 @@ def profile():
 @app.route('/profile/cancel/<int:participation_id>', methods=['POST'])
 @login_required
 def cancel_booking(participation_id):
-    if current_user.role != 'adventurer':
+    if current_user.role != 'Adventurer':
         return redirect(url_for('index'))
 
     # 1. Fetch the record to ensure it belongs to this user
@@ -165,5 +167,65 @@ def cancel_booking(participation_id):
     flash("Quest participation cancelled successfully.", "success")
     return redirect(url_for('profile'))
 
+@app.route('/gm/dashboard')
+@login_required
+def gm_dashboard():
+    # 1. Security Check
+    if current_user.role != 'Guild Master':
+        flash("Access denied. Only Guild Masters can view this page.", "danger")
+        return redirect(url_for('profile'))
+
+    raw_stats = db.get_gm_dashboard_stats()
+    quests_grouped = {}
+
+    # 2. Data Processing & Grouping
+    for row in raw_stats:
+        qid = row['QId']
+        
+        # Initialize the quest group if it doesn't exist yet
+        if qid not in quests_grouped:
+            quests_grouped[qid] = {
+                'title': row['title'],
+                'sessions': []
+            }
+        
+        # Calculate dynamic stats
+        roles = {
+            'Warrior': row['warrior_res'], 
+            'Mage': row['mage_res'], 
+            'Healer': row['healer_res']
+        }
+        
+        max_res = max(roles.values())
+        if max_res == 0:
+            most_requested = "None yet"
+        else:
+            # Gets all roles tied for the highest number (e.g., "Warrior, Mage")
+            most_requested = ", ".join([k for k, v in roles.items() if v == max_res])
+
+        session_dict = dict(row)
+        session_dict['remaining_places'] = 9 - row['total_reserved'] # 4W + 3M + 2H = 9 total
+        session_dict['most_requested'] = most_requested
+        
+        quests_grouped[qid]['sessions'].append(session_dict)
+
+    return render_template('gm_dashboard.html', quests_grouped=quests_grouped)
+
+@app.route('/gm/cancel_session/<int:session_id>', methods=['POST'])
+@login_required
+def gm_cancel_session(session_id):
+    if current_user.role != 'guild_master':
+        return redirect(url_for('index'))
+
+    success = db.cancel_session_if_empty(session_id)
+    
+    if success:
+        flash("Session cancelled successfully.", "success")
+    else:
+        flash("Cannot cancel this session. Adventurers have already joined.", "danger")
+        
+    return redirect(url_for('gm_dashboard'))
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Add port=5001 to bypass the AirPlay conflict
+    app.run(debug=True, port=5001)

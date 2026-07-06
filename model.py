@@ -5,3 +5,7 @@ class User(UserMixin):
         self.UId = id
         self.username = username
         self.role = role
+    
+    def get_id(self):
+        # Flask-Login requires this to be returned as a string!
+        return str(self.UId)

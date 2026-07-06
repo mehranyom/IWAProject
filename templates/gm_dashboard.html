@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Guild Master Dashboard</h2>
+    <div>
+        <a href="#" class="btn btn-primary">Create New Quest</a>
+        <a href="#" class="btn btn-secondary">Schedule Session</a>
+    </div>
+</div>
+
+<p class="lead text-muted mb-5">Manage your weekly quest program and monitor adventurer participations.</p>
+
+{% if quests_grouped %}
+    {% for qid, quest in quests_grouped.items() %}
+        <div class="card shadow-sm mb-5 border-0 bg-light">
+            <div class="card-header bg-dark text-white py-3">
+                <h4 class="mb-0">{{ quest.title }}</h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="row row-cols-1 row-cols-lg-2 g-4">
+                    {% for session in quest.sessions %}
+                        <div class="col">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title text-primary">{{ session.day }} at {{ session.start_time }}</h5>
+                                        <span class="badge bg-secondary h-100">{{ session.location }}</span>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col border-end">
+                                            <h3 class="mb-0">{{ session.total_reserved }}</h3>
+                                            <small class="text-muted">Reserved</small>
+                                        </div>
+                                        <div class="col">
+                                            <h3 class="mb-0">{{ session.remaining_places }}</h3>
+                                            <small class="text-muted">Remaining</small>
+                                        </div>
+                                    </div>
+
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            Role Breakdown:
+                                            <span class="text-muted">
+                                                W: {{ session.warrior_res }}/4 | M: {{ session.mage_res }}/3 | H: {{ session.healer_res }}/2
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            Most Requested:
+                                            <strong>{{ session.most_requested }}</strong>
+                                        </li>
+                                    </ul>
+
+                                    <div class="text-end mt-auto">
+                                        {% if session.total_reserved == 0 %}
+                                            <form action="{{ url_for('gm_cancel_session', session_id=session.SId) }}" method="POST" onsubmit="return confirm('Permanently cancel this scheduled session?');">
+                                                <button type="submit" class="btn btn-outline-danger w-100">Cancel Session</button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn btn-outline-secondary w-100" disabled>Cannot Cancel (Active Party)</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">No quests or sessions have been scheduled for this week.</div>
+{% endif %}
+{% endblock %}

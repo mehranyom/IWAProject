@@ -24,11 +24,13 @@
                                 <span class="nav-link text-light">Welcome, {{ current_user.username }}</span>
                             </li>
                             {% if current_user.role == 'guild_master' %}
-                                <li class="nav-item"><a class="nav-link" href="#">GM Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('gm_dashboard') }}">GM Dashboard</a></li>
                             {% else %}
                                 <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">My Profile</a></li>
                             {% endif %}
-                            <li class="nav-item"><a class="nav-link" href="#">Logout</a></li>
+                            
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                            
                         {% else %}
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
