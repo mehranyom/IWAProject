@@ -23,10 +23,10 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None)
     conn = get_db_connection()
     
     query = '''
-        SELECT sessions.id as session_id, sessions.day, sessions.start_time, sessions.location,
+        SELECT sessions.SId, sessions.day, sessions.start_time, sessions.location,
                quests.title, quests.quest_type, quests.difficulty, quests.duration
         FROM sessions
-        JOIN quests ON sessions.quest_id = quests.id
+        JOIN quests ON sessions.QId = quests.QId
         WHERE 1=1
     '''
     params = []
@@ -63,16 +63,16 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None)
 
 
 """This function fetches a user from the database and returns a User object."""
-def get_user_by_id(user_id):
+def get_user_by_id(uid):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = 'SELECT * FROM users WHERE id = ?'
-    cursor.execute(query, (user_id,))
+    query = 'SELECT * FROM users WHERE UId = ?'
+    cursor.execute(query, (uid,))
     user_row = cursor.fetchone()
     conn.close()
     
     if user_row:
-        return User(id=user_row['id'], username=user_row['username'], role=user_row['role'])
+        return User(id=user_row['UId'], username=user_row['username'], role=user_row['role'])
     return None
 
 
@@ -112,6 +112,73 @@ def verify_user(username, password):
 
     # If the user exists AND the provided password matches the stored hash
     if user_row and check_password_hash(user_row['password_hash'], password):
-        return User(id=user_row['id'], username=user_row['username'], role=user_row['role'])
+        return User(id=user_row['UId'], username=user_row['username'], role=user_row['role'])
     
     return None
+
+
+""" these 3 function are for task 4. Quest session detail.
+these has to be checked."""
+
+def get_session_details(sid):
+    """Fetches complete details for a specific session by joining tables."""
+    conn = get_db_connection()
+    query = '''
+        SELECT sessions.SId, sessions.day, sessions.start_time, sessions.location,
+               quests.title, quests.duration, quests.quest_type, quests.difficulty, 
+               quests.description, quests.image_filename
+        FROM sessions
+        JOIN quests ON sessions.QId = quests.QId
+        WHERE sessions.SId = ?
+    '''
+    session_data = conn.execute(query, (sid,)).fetchone()
+    conn.close()
+    return session_data
+
+def get_role_availability(sid):
+    """Calculates how many places are left for each role in a session."""
+    conn = get_db_connection()
+    query = '''
+        SELECT party_role, SUM(places_reserved) as taken
+        FROM participations
+        WHERE SId = ?
+        GROUP BY party_role
+    '''
+    results = conn.execute(query, (sid,)).fetchall()
+    conn.close()
+
+    # Base capacity defined by exam rules
+    availability = {'Warrior': 4, 'Mage': 3, 'Healer': 2}
+    
+    # Subtract taken places
+    for row in results:
+        role = row['party_role']
+        if role in availability:
+            availability[role] -= row['taken']
+            
+    return availability
+
+def get_adventurer_schedule(uid):
+    """Fetches all sessions an adventurer has currently joined to check limits and overlaps."""
+    conn = get_db_connection()
+    query = '''
+        SELECT sessions.SId, sessions.day, sessions.start_time, quests.duration
+        FROM participations
+        JOIN sessions ON participations.SId = sessions.SId
+        JOIN quests ON sessions.QId = quests.QId
+        WHERE participations.UId = ?
+    '''
+    schedule = conn.execute(query, (uid,)).fetchall()
+    conn.close()
+    return schedule
+
+def join_session(sid, uid, party_role, places):
+    """Inserts the new participation record."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO participations (SId, UId, party_role, places_reserved)
+        VALUES (?, ?, ?, ?)
+    ''', (sid, uid, party_role, places))
+    conn.commit()
+    conn.close()

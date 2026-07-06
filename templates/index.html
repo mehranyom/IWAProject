@@ -10,38 +10,67 @@
             <label for="day" class="form-label">Day</label>
             <select name="day" id="day" class="form-select">
                 <option value="">All Days</option>
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
+                <option value="Monday" {% if day_filter == 'Monday' %}selected{% endif %}>Monday</option>
+                <option value="Tuesday" {% if day_filter == 'Tuesday' %}selected{% endif %}>Tuesday</option>
+                <option value="Wednesday" {% if day_filter == 'Wednesday' %}selected{% endif %}>Wednesday</option>
+                <option value="Thursday" {% if day_filter == 'Thursday' %}selected{% endif %}>Thursday</option>
+                <option value="Friday" {% if day_filter == 'Friday' %}selected{% endif %}>Friday</option>
+                <option value="Saturday" {% if day_filter == 'Saturday' %}selected{% endif %}>Saturday</option>
+                <option value="Sunday" {% if day_filter == 'Sunday' %}selected{% endif %}>Sunday</option>
             </select>
         </div>
         <div class="col-md-3">
             <label for="quest_type" class="form-label">Quest Type</label>
             <select name="quest_type" id="quest_type" class="form-select">
                 <option value="">All Types</option>
-                <option value="combat">Combat</option>
-                <option value="exploration">Exploration</option>
-                <option value="stealth">Stealth</option>
-            </select>
+                <option value="combat" {% if type_filter == 'combat' %}selected{% endif %}>Combat</option>
+                <option value="exploration" {% if type_filter == 'exploration' %}selected{% endif %}>Exploration</option>
+                <option value="stealth" {% if type_filter == 'stealth' %}selected{% endif %}>Stealth</option>
+                </select>
         </div>
         <div class="col-md-3">
             <label for="difficulty" class="form-label">Difficulty</label>
             <select name="difficulty" id="difficulty" class="form-select">
                 <option value="">All Difficulties</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-                <option value="legendary">Legendary</option>
+                <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Easy</option>
+                <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Hard</option>
+                <option value="legendary" {% if difficulty_filter == 'legendary' %}selected{% endif %}>Legendary</option>
             </select>
         </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Filter Schedule</button>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">Reset</a>
         </div>
     </form>
+    {% if day_filter or type_filter or difficulty_filter %}
+<div class="mb-4 p-3 bg-white border rounded d-flex flex-wrap align-items-center gap-2">
+    <span class="fw-bold me-2">Active Filters:</span>
+    
+    {% if day_filter %}
+    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+        Day: {{ day_filter }}
+        <a href="{{ url_for('index', quest_type=type_filter, difficulty=difficulty_filter) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove day filter">&times;</a>
+    </span>
+    {% endif %}
+
+    {% if type_filter %}
+    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+        Type: {{ type_filter|capitalize }}
+        <a href="{{ url_for('index', day=day_filter, difficulty=difficulty_filter) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove type filter">&times;</a>
+    </span>
+    {% endif %}
+
+    {% if difficulty_filter %}
+    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+        Difficulty: {{ difficulty_filter|capitalize }}
+        <a href="{{ url_for('index', day=day_filter, quest_type=type_filter) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove difficulty filter">&times;</a>
+    </span>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-danger ms-auto">Clear All</a>
+</div>
+{% endif %}
 </section>
 
 <section>
@@ -59,7 +88,7 @@
                             <li><strong>Difficulty:</strong> {{ session.difficulty|capitalize }}</li>
                             <li><strong>Duration:</strong> {{ session.duration }} minutes</li>
                         </ul>
-                        <a href="#" class="btn btn-outline-dark mt-2">View Details & Join</a>
+                        <a href="{{ url_for('session_detail', session_id=session.SId) }}" class="btn btn-outline-dark mt-2">View Details & Join</a>
                     </div>
                 </div>
             </article>
