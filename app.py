@@ -8,6 +8,7 @@ from flask_login import (
 )
 from datetime import datetime, timedelta
 import db
+import util
 app = Flask(__name__)
 
 # Required by Flask for session management
@@ -106,6 +107,7 @@ def logout():
 """ task 4. Quest session. to be ckecked."""
 @app.route('/session/<int:session_id>', methods=['GET', 'POST'])
 def session_detail(session_id):
+    
     session_data = db.get_session_details(session_id)
     if not session_data:
         flash("Quest session not found.", "danger")
@@ -113,52 +115,55 @@ def session_detail(session_id):
 
     availability = db.get_role_availability(session_id)
 
+    # Delegate the heavy lifting to the helper function
     if request.method == 'POST':
-        # 1. Authentication Check
-        if not current_user.is_authenticated:
-            flash("You must be logged in to join a quest.", "warning")
-            return redirect(url_for('login'))
-            
-        # 2. Role Check
-        if current_user.role != 'adventurer':
-            flash("Guild Masters cannot join quest sessions.", "danger")
-            return redirect(url_for('session_detail', session_id=session_id))
-
-        party_role = request.form.get('party_role')
-        places = int(request.form.get('places_reserved', 1))
-
-        # 3. Capacity Check
-        if availability.get(party_role, 0) < places:
-            flash(f"Not enough places available for the {party_role} role.", "danger")
-            return redirect(url_for('session_detail', session_id=session_id))
-
-        schedule = db.get_adventurer_schedule(current_user.UId)
-        
-        # 4. Weekly Limit Check (Max 3)
-        if len(schedule) >= 3:
-            flash("You have reached your weekly limit of 3 quest sessions.", "danger")
-            return redirect(url_for('session_detail', session_id=session_id))
-
-        # 5. Time Overlap Check (And duplicate joining prevention)
-        new_start = datetime.strptime(session_data['start_time'], '%H:%M')
-        new_end = new_start + timedelta(minutes=session_data['duration'])
-
-        for task in schedule:
-            if task['day'] == session_data['day']:
-                task_start = datetime.strptime(task['start_time'], '%H:%M')
-                task_end = task_start + timedelta(minutes=task['duration'])
-                
-                # Formula for time overlap: (Start A < End B) and (Start B < End A)
-                if new_start < task_end and task_start < new_end:
-                    flash("This session overlaps in time with another quest you have joined.", "danger")
-                    return redirect(url_for('session_detail', session_id=session_id))
-
-        # If all checks pass, save to database
-        db.join_session(session_id, current_user.UId, party_role, places)
-        flash(f"Successfully joined the quest as {party_role} (Places: {places})!", "success")
-        return redirect(url_for('index')) # We will change this to redirect to the profile page later
+        return util.handle_booking_request(session_id, session_data, availability)
 
     return render_template('session_detail.html', session=session_data, availability=availability)
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    if current_user.role != 'adventurer':
+        flash("Guild Masters have a different dashboard.", "info")
+        return redirect(url_for('index')) # We will point this to GM Dashboard later
+
+    raw_participations = db.get_user_participations(current_user.UId)
+    
+    # Convert rows to dictionaries to add the 'is_modifiable' flag
+    participations = []
+    for row in raw_participations:
+        part_dict = dict(row)
+        part_dict['is_modifiable'] = util.can_modify_session(
+            row['day'], row['start_time'], SIMULATED_DAY, SIMULATED_TIME
+        )
+        participations.append(part_dict)
+
+    return render_template('adventurer_profile.html', participations=participations)
+
+@app.route('/profile/cancel/<int:participation_id>', methods=['POST'])
+@login_required
+def cancel_booking(participation_id):
+    if current_user.role != 'adventurer':
+        return redirect(url_for('index'))
+
+    # 1. Fetch the record to ensure it belongs to this user
+    part = db.get_participation_by_id(participation_id, current_user.UId)
+    
+    if not part:
+        flash("Participation record not found or unauthorized.", "danger")
+        return redirect(url_for('profile'))
+
+    # 2. Re-verify the 8-hour rule on the backend
+    if not util.can_modify_session(part['day'], part['start_time'], SIMULATED_DAY, SIMULATED_TIME):
+        flash("Cannot cancel. This session starts in less than 8 hours.", "danger")
+        return redirect(url_for('profile'))
+
+    # 3. Execute cancellation
+    db.cancel_participation(participation_id, current_user.UId)
+    flash("Quest participation cancelled successfully.", "success")
+    return redirect(url_for('profile'))
 
 if __name__ == '__main__':
     app.run(debug=True)

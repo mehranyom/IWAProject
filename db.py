@@ -135,8 +135,12 @@ def get_session_details(sid):
     conn.close()
     return session_data
 
+
+"""
+Calculates how many places are left for each role in a session and return a dictionary as output containing availablity
+for each role like this: {'Warrior': 4, 'Mage': 3, 'Healer': 2}
+"""
 def get_role_availability(sid):
-    """Calculates how many places are left for each role in a session."""
     conn = get_db_connection()
     query = '''
         SELECT party_role, SUM(places_reserved) as taken
@@ -153,13 +157,16 @@ def get_role_availability(sid):
     # Subtract taken places
     for row in results:
         role = row['party_role']
-        if role in availability:
+        if role in availability: # check if this "if" statement is necessary or not
             availability[role] -= row['taken']
             
     return availability
 
+
+"""
+Fetches all sessions an adventurer has currently joined to check limits and overlaps.
+"""
 def get_adventurer_schedule(uid):
-    """Fetches all sessions an adventurer has currently joined to check limits and overlaps."""
     conn = get_db_connection()
     query = '''
         SELECT sessions.SId, sessions.day, sessions.start_time, quests.duration
@@ -172,13 +179,67 @@ def get_adventurer_schedule(uid):
     conn.close()
     return schedule
 
+
+"""
+Inserts the new participation record.
+"""
 def join_session(sid, uid, party_role, places):
-    """Inserts the new participation record."""
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
+    query = '''
         INSERT INTO participations (SId, UId, party_role, places_reserved)
         VALUES (?, ?, ?, ?)
-    ''', (sid, uid, party_role, places))
+    '''
+    cursor = conn.cursor()
+    cursor.execute(query, (sid, uid, party_role, places))
+    conn.commit()
+    conn.close()
+
+
+def get_user_participations(user_id):
+    """Fetches all joined quests for a specific adventurer, ordered logically."""
+    conn = get_db_connection()
+    query = '''
+        SELECT p.PId as participation_id, p.party_role, p.places_reserved,
+               s.SId as session_id, s.day, s.start_time, s.location,
+               q.title, q.duration, q.quest_type
+        FROM participations p
+        JOIN sessions s ON p.SId = s.SId
+        JOIN quests q ON s.QId = q.QId
+        WHERE p.UId = ?
+        ORDER BY 
+        CASE s.day
+            WHEN 'Monday' THEN 1
+            WHEN 'Tuesday' THEN 2
+            WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday' THEN 4
+            WHEN 'Friday' THEN 5
+            WHEN 'Saturday' THEN 6
+            WHEN 'Sunday' THEN 7
+        END, s.start_time ASC
+    '''
+    participations = conn.execute(query, (user_id,)).fetchall()
+    conn.close()
+    return participations
+
+def get_participation_by_id(participation_id, user_id):
+    """Fetches a specific participation to verify ownership and time before cancelling."""
+    conn = get_db_connection()
+    query = '''
+        SELECT p.PId, s.day, s.start_time 
+        FROM participations p
+        JOIN sessions s ON p.SId = s.SId
+        WHERE p.PId = ? AND p.UId = ?
+    '''
+    participation = conn.execute(query, (participation_id, user_id)).fetchone()
+    conn.close()
+    return participation
+
+def cancel_participation(participation_id, user_id):
+    """Deletes the participation record from the database."""
+    conn = get_db_connection()
+    # The user_id check ensures a user cannot delete someone else's booking maliciously
+    query = 'DELETE FROM participations WHERE PId = ? AND UId = ?'
+    conn.execute(query, 
+                 (participation_id, user_id))
     conn.commit()
     conn.close()
