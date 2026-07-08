@@ -29,7 +29,7 @@ def handle_booking_request(session_id, session_data, availability):
         flash("You must be logged in to join a quest.", "warning")
         return redirect(url_for('login'))
         
-    if current_user.role != 'adventurer':
+    if current_user.role != 'Adventurer':
         flash("Guild Masters cannot join quest sessions.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
 

@@ -293,3 +293,44 @@ def cancel_session_if_empty(session_id):
     conn.commit()
     conn.close()
     return True
+
+"""guild master form"""
+def create_quest(title, duration, quest_type, difficulty, description, image_filename):
+    """Inserts a new quest. Once created, it is immutable."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO quests (title, duration, quest_type, difficulty, description, image_filename)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (title, duration, quest_type, difficulty, description, image_filename))
+    conn.commit()
+    conn.close()
+
+def get_all_quests_for_dropdown():
+    """Fetches quests to populate the scheduling form."""
+    conn = get_db_connection()
+    # Using your updated QId column
+    quests = conn.execute('SELECT QId, title FROM quests ORDER BY title').fetchall()
+    conn.close()
+    return quests
+
+def check_session_overlap(day, start_time, location):
+    """Returns True if another session shares the exact day, time, and location."""
+    conn = get_db_connection()
+    query = 'SELECT COUNT(*) as count FROM sessions WHERE day = ? AND start_time = ? AND location = ?'
+    result = conn.execute(query, (day, start_time, location)).fetchone()
+    conn.close()
+    
+    return result['count'] > 0
+
+def schedule_session(quest_id, day, start_time, location):
+    """Inserts a new scheduled session."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Using your updated QId column
+    cursor.execute('''
+        INSERT INTO sessions (QId, day, start_time, location)
+        VALUES (?, ?, ?, ?)
+    ''', (quest_id, day, start_time, location))
+    conn.commit()
+    conn.close()

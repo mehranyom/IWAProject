@@ -1,5 +1,14 @@
 {% extends 'base.html' %}
 
+{% block full_width %}
+    <div class="hero-banner">
+        <div>
+            <h1 class="display-3 fw-bold">Welcome to Dragon's Rest</h1>
+            <p class="lead">Secure your party role in this week's quests.</p>
+        </div>
+    </div>
+    {% endblock %}
+
 {% block content %}
 <section class="mb-4">
     <h2>Weekly Quest Program</h2>
@@ -97,4 +106,22 @@
         {% endfor %}
     </div>
 </section>
+
+{% block scripts %}
+<script>
+    // Listen for the user scrolling
+    window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('homeNavbar');
+        // If scrolled down more than 50 pixels
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+            navbar.classList.remove('navbar-transparent');
+        } else {
+            // If back at the top
+            navbar.classList.add('navbar-transparent');
+            navbar.classList.remove('navbar-scrolled');
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

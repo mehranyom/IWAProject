@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Create New Quest</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> Once a quest is created, its core details become immutable and cannot be edited.
+                </div>
+                
+                <form method="POST" action="{{ url_for('create_quest') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Quest Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="duration" class="form-label">Duration (Minutes)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" min="15" step="15" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="quest_type" class="form-label">Quest Type</label>
+                            <select class="form-select" id="quest_type" name="quest_type" required>
+                                <option value="" disabled selected>Select Type</option>
+                                <option value="combat">Combat</option>
+                                <option value="exploration">Exploration</option>
+                                <option value="puzzle">Puzzle</option>
+                                <option value="stealth">Stealth</option>
+                                <option value="magic">Magic</option>
+                                <option value="survival">Survival</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="difficulty" class="form-label">Difficulty</label>
+                            <select class="form-select" id="difficulty" name="difficulty" required>
+                                <option value="" disabled selected>Select Difficulty</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                                <option value="legendary">Legendary</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="image_filename" class="form-label">Image Filename (Optional)</label>
+                        <input type="text" class="form-control" id="image_filename" name="image_filename" placeholder="e.g., dragon.jpg">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('gm_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Forge Quest</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

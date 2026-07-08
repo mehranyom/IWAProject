@@ -20,6 +20,10 @@ app.config['SECRET_KEY'] = 'a_very_secret_key_for_exam'
 SIMULATED_DAY = "Wednesday"
 SIMULATED_TIME = "14:00"
 
+# constant variables
+GM = 'Guild Master'
+AD = 'Adventurer'
+
 # --- FLASK-LOGIN SETUP ---
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -65,7 +69,7 @@ def register():
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        if role not in ['adventurer', 'guild_master']:
+        if role not in [AD, GM]:
             flash('Invalid role selected.', 'danger')
             return redirect(url_for('register'))
 
@@ -127,7 +131,7 @@ def session_detail(session_id):
 @app.route('/profile')
 @login_required
 def profile():
-    if current_user.role != 'adventurer':
+    if current_user.role != AD:
         flash("Guild Masters have a different dashboard.", "info")
         return redirect(url_for('index')) # We will point this to GM Dashboard later
 
@@ -147,7 +151,7 @@ def profile():
 @app.route('/profile/cancel/<int:participation_id>', methods=['POST'])
 @login_required
 def cancel_booking(participation_id):
-    if current_user.role != 'Adventurer':
+    if current_user.role != AD:
         return redirect(url_for('index'))
 
     # 1. Fetch the record to ensure it belongs to this user
@@ -171,7 +175,7 @@ def cancel_booking(participation_id):
 @login_required
 def gm_dashboard():
     # 1. Security Check
-    if current_user.role != 'Guild Master':
+    if current_user.role != GM:
         flash("Access denied. Only Guild Masters can view this page.", "danger")
         return redirect(url_for('profile'))
 
@@ -225,6 +229,67 @@ def gm_cancel_session(session_id):
         flash("Cannot cancel this session. Adventurers have already joined.", "danger")
         
     return redirect(url_for('gm_dashboard'))
+
+
+
+@app.route('/gm/create_quest', methods=['GET', 'POST'])
+@login_required
+def create_quest():
+    if current_user.role != GM:
+        flash("Access denied. Only Guild Masters can create quests.", "danger")
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        duration = request.form.get('duration')
+        quest_type = request.form.get('quest_type')
+        difficulty = request.form.get('difficulty')
+        description = request.form.get('description')
+        image_filename = request.form.get('image_filename') # Can be empty
+
+        if not (title and duration and quest_type and difficulty):
+            flash("Please fill in all mandatory fields.", "danger")
+            return redirect(url_for('create_quest'))
+
+        db.create_quest(title, int(duration), quest_type, difficulty, description, image_filename)
+        flash("Quest created successfully! It is now permanently recorded.", "success")
+        return redirect(url_for('gm_dashboard'))
+
+    return render_template('create_quest.html')
+
+@app.route('/gm/schedule_session', methods=['GET', 'POST'])
+@login_required
+def schedule_session():
+    if current_user.role != GM:
+        flash("Access denied.", "danger")
+        return redirect(url_for('index'))
+
+    # Fetch quests to populate the HTML <select> dropdown
+    quests = db.get_all_quests_for_dropdown()
+
+    if request.method == 'POST':
+        quest_id = request.form.get('quest_id')
+        day = request.form.get('day')
+        start_time = request.form.get('start_time')
+        location = request.form.get('location')
+
+        if not (quest_id and day and start_time and location):
+            flash("All fields are required to schedule a session.", "danger")
+            return redirect(url_for('schedule_session'))
+
+        # The Overlap Check
+        if db.check_session_overlap(day, start_time, location):
+            flash(f"Overlap detected: The {location} is already booked on {day} at {start_time}.", "danger")
+            return redirect(url_for('schedule_session'))
+
+        db.schedule_session(quest_id, day, start_time, location)
+            
+        flash("Quest session scheduled successfully!", "success")
+        return redirect(url_for('gm_dashboard'))
+
+    return render_template('schedule_session.html', quests=quests)
+
+
 
 if __name__ == '__main__':
     # Add port=5001 to bypass the AirPlay conflict

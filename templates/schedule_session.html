@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Schedule Session</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('schedule_session') }}">
+                    
+                    <div class="mb-4">
+                        <label for="quest_id" class="form-label">Select Quest</label>
+                        <select class="form-select" id="quest_id" name="quest_id" required>
+                            <option value="" disabled selected>Choose a quest to schedule...</option>
+                            {% for quest in quests %}
+                                <option value="{{ quest.QId }}">{{ quest.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="day" class="form-label">Day of Week</label>
+                            <select class="form-select" id="day" name="day" required>
+                                <option value="" disabled selected>Select Day</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="start_time" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="location" class="form-label">Location</label>
+                        <select class="form-select" id="location" name="location" required>
+                            <option value="" disabled selected>Select Location</option>
+                            <option value="Dungeon Hall">Dungeon Hall</option>
+                            <option value="Enchanted Forest">Enchanted Forest</option>
+                            <option value="Wizard Tower">Wizard Tower</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('gm_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Schedule Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
