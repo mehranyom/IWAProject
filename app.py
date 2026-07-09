@@ -9,12 +9,23 @@ from flask_login import (
 from datetime import datetime, timedelta
 import db
 import util
+import os
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
 
 # Required by Flask for session management
 app.config['SECRET_KEY'] = 'a_very_secret_key_for_exam' 
+# File Upload Configuration
+UPLOAD_FOLDER = os.path.join('static', 'images', 'avatars')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Helper function to check file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Simulated Current Time
 SIMULATED_DAY = "Wednesday"
@@ -81,6 +92,30 @@ def register():
             flash('Username is already taken.', 'danger')
 
     return render_template('register.html')
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        update_type = request.form.get('update_type')
+
+        # Route the request to the appropriate helper function
+        if update_type == 'username':
+            util.handle_username_update(request.form, current_user.UId)
+            
+        elif update_type == 'password':
+            util.handle_password_update(request.form, current_user.UId)
+            
+        elif update_type == 'avatar':
+            util.handle_avatar_update(request.files, current_user, app.config)
+
+        # Always redirect back after a POST
+        return redirect(url_for('edit_profile'))
+
+    # Handle GET request
+    return render_template('edit_profile.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

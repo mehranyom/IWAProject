@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Guild Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -17,42 +20,75 @@
                     <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Guild Logo" id="logo" class="d-inline-block align-text-top me-2">
                 </a>
                 
-                {% if not is_home %}
-                <div class="navbar-text ms-3 text-warning d-none d-lg-block">
-                    <small>Simulated Time: {{ current_day }}, {{ current_time }}</small>
-                </div>
+                
+                {% if not current_user.is_authenticated %}
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
                 {% endif %}
-    
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-    
+                
+                {% if current_user.is_authenticated %}
+                    <div class="dropdown d-lg-none ms-auto">
+                        <a class="d-flex align-items-center text-decoration-none" href="#" id="mobileUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if current_user.avatar_filename %}
+                                <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; background-color: #fff;">
+                            {% endif %}
+                        </a>
+                        
+                        <ul class="dropdown-menu dropdown-menu-end shadow position-absolute mt-3" aria-labelledby="mobileUserDropdown" style="background-color: var(--surface-parchment); border: 1px solid var(--border-dim);">
+                            <li><h6 class="dropdown-header text-center text-light">Hi, {{ current_user.username }}</h6></li>
+                            <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                            
+                            <li class="px-3 mb-2">
+                                <a class="btn btn-primary w-100 btn-sm text-dark fw-bold" href="{{ url_for('index') }}">Sessions</a>
+                            </li>
+                            
+                            {% if current_user.role == 'Guild Master' %}
+                                <li><a class="dropdown-item text-light" href="{{ url_for('gm_dashboard') }}">Master Hall</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item text-light" href="{{ url_for('profile') }}">My Profile</a></li>
+                            {% endif %}
+                            
+                            <li><a class="dropdown-item text-light" href="{{ url_for('edit_profile') }}">Edit Information</a></li>
+                            
+                            <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </div>
+                {% endif %}
+                
                 <div class="collapse navbar-collapse justify-content-end" id="mobileMenu">
                     <ul class="navbar-nav align-items-lg-center">
-                        <li class="nav-item me-lg-3 mb-2 mb-lg-0">
+                        
+                        <li class="nav-item me-lg-3 mb-2 mb-lg-0 {% if current_user.is_authenticated %}d-none d-lg-block{% endif %}">
                             <a class="btn btn-info w-100 text-dark fw-bold" href="{{ url_for('index') }}">Sessions</a>
                         </li>
                     
                         {% if current_user.is_authenticated %}
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown d-none d-lg-block">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center justify-content-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="{{ current_user.avatar_url | default(url_for('static', filename='images/default-avatar.png'), true) }}" alt="Avatar" class="nav-avatar">
-                                    <span class="d-lg-none ms-2 text-light">Account Menu</span>
+                                    {% if current_user.avatar_filename %}
+                                        <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover; background-color: #fff;">
+                                    {% endif %}
                                 </a>
                                 
-                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
-                                    <li><h6 class="dropdown-header text-center">Hi, {{ current_user.username }}</h6></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown" style="background-color: var(--surface-parchment); border: 1px solid var(--border-dim);">
+                                    <li><h6 class="dropdown-header text-center text-light">Hi, {{ current_user.username }}</h6></li>
+                                    <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
                                     
                                     {% if current_user.role == 'Guild Master' %}
-                                        <li><a class="dropdown-item" href="{{ url_for('gm_dashboard') }}">Master Hall</a></li>
+                                        <li><a class="dropdown-item text-light" href="{{ url_for('gm_dashboard') }}">Master Hall</a></li>
                                     {% else %}
-                                        <li><a class="dropdown-item" href="{{ url_for('profile') }}">My Profile</a></li>
+                                        <li><a class="dropdown-item text-light" href="{{ url_for('profile') }}">My Profile</a></li>
                                     {% endif %}
                                     
-                                    <li><a class="dropdown-item" href="#">Edit Information</a></li>
+                                    <li><a class="dropdown-item text-light" href="{{ url_for('edit_profile') }}">Edit Information</a></li>
                                     
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
                                     <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                                 </ul>
                             </li>

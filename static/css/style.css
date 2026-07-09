@@ -1,3 +1,155 @@
+/* --- 1. THEME VARIABLES --- */
+:root {
+    --bg-obsidian: #121212;
+    --surface-parchment: #2A2A2A;
+    --text-primary: #E0E0E0;
+    --text-muted: #9E9E9E;
+    
+    --accent-magic: #39FF14; /* Neon Green Glow */
+    
+    /* Role Colors */
+    --role-warrior: #DC143C;
+    --role-mage: #00BFFF;
+    --role-healer: #50C878;
+    
+    --border-dim: #333333;
+}
+
+/* --- 2. TYPOGRAPHY & BODY --- */
+body {
+    background-color: var(--bg-obsidian);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+h1 { font-size: 2.5rem; font-weight: 700; }
+h2 { font-size: 1.5rem; }
+p { font-size: 1rem; font-weight: 400; }
+small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+
+/* --- 3. BOOTSTRAP OVERRIDES (The Canvas & Parchment) --- */
+.card, .bg-light, .bg-white {
+    background-color: var(--surface-parchment) !important;
+    border: 1px solid var(--border-dim) !important;
+    color: var(--text-primary) !important;
+}
+
+.card-header.bg-dark {
+    background-color: #1a1a1a !important;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.form-control, .form-select {
+    background-color: #1E1E1E;
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #1E1E1E;
+    color: var(--text-primary);
+    border-color: var(--accent-magic);
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.25);
+}
+
+/* --- 4. BUTTONS & GLOWS --- */
+.btn-primary {
+    background-color: var(--accent-magic);
+    color: #121212; /* Dark text for high contrast */
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #4dff2b; /* Slightly brighter on hover */
+    color: #000;
+    box-shadow: 0 0 18px rgba(57, 255, 20, 0.6);
+    transform: translateY(-1px);
+}
+
+/* --- 5. QUEST CARD HOVER EFFECTS --- */
+.quest-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.quest-card:hover {
+    transform: translateY(-4px);
+    background-color: #333333 !important; /* Brighten slightly */
+    /* Faint spread-out border shadow using the accent color */
+    box-shadow: 0 8px 20px rgba(57, 255, 20, 0.08) !important; 
+    border-color: rgba(57, 255, 20, 0.3) !important;
+}
+
+/* --- 6. DISABLED STATES --- */
+.btn:disabled, .btn.disabled, button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    pointer-events: all; /* Allows the not-allowed cursor to show */
+}
+
+/* --- 7. ROLE BADGES & PIPS --- */
+.badge-warrior { background-color: var(--role-warrior); color: white; }
+.badge-mage { background-color: var(--role-mage); color: white; }
+.badge-healer { background-color: var(--role-healer); color: black; }
+
+.capacity-tray {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pip {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid;
+}
+
+.pip.w-filled { background-color: var(--role-warrior); border-color: var(--role-warrior); }
+.pip.w-empty { background-color: transparent; border-color: var(--role-warrior); }
+
+.pip.m-filled { background-color: var(--role-mage); border-color: var(--role-mage); }
+.pip.m-empty { background-color: transparent; border-color: var(--role-mage); }
+
+.pip.h-filled { background-color: var(--role-healer); border-color: var(--role-healer); }
+.pip.h-empty { background-color: transparent; border-color: var(--role-healer); }
+
+/* --- 9. LIST GROUP DARK MODE FIX --- */
+.list-group-item {
+    background-color: transparent !important; /* Lets the dark card background show through */
+    color: var(--text-primary) !important;
+    border-color: var(--border-dim) !important;
+    font-family: 'Inter', sans-serif !important; /* Forces the correct body font */
+}
+
+/* Optional: If you want the roles (Warrior, Mage, Healer) to look more dramatic, 
+   you can use the Guild font instead by changing the line above to:
+   font-family: 'Cinzel', serif !important; 
+*/
+
+
+
+
+.avatar {
+    width: 100px;
+    height: 100px; 
+    object-fit: cover; 
+    background-color: #e9ecef;
+}
+
 /* The starting state for the homepage navbar */
 .navbar-transparent {
     background-color: transparent !important;
@@ -6,30 +158,58 @@
 
 /* The state applied when scrolling */
 .navbar-scrolled {
-    background-color: #6791bb !important; /* This is Bootstrap's bg-dark color */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    /* background-color: #6791bb !important; /* This is Bootstrap's bg-dark color */
+    /* box-shadow: 0 4px 6px rgba(0,0,0,0.1); */
+
+    background-color: rgba(18, 18, 18, 0.95) !important; /* Matches --bg-obsidian */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-dim);
 }
 
 /* The Hero Banner */
-.hero-banner {
-    /* 1. Exactly 100% of the screen height */
-    height: 100vh; 
+/* The main container */
+.hero-banner-wrapper {
+    position: relative;
+    height: 100dvh; 
+    width: 100%;
+    overflow: hidden; /* Prevents scrollbars if the video is too big */
     
-    /* 2. The background image and dark overlay */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../images/banner.jpg');
-    background-size: cover;
-    background-position: center;
-    
-    /* 3. Flexbox automatically centers the text perfectly in the middle of the screen */
+    /* Flexbox to center the text */
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* 4. Text styling */
+}
+
+/* The video element */
+.background-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%); /* Centers the video */
+    z-index: 0; 
+    object-fit: cover; /* Acts just like background-size: cover */
+}
+
+/* Optional: Darken the video so white text is readable */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* 60% black tint */
+    z-index: 1; 
+}
+
+/* The text content */
+.hero-content {
+    position: relative;
+    z-index: 2; /* Brings the text to the very front */
     color: white;
     text-align: center;
-    
-    /* We completely deleted the margin-top hack! */
 }
 
 .navbar-brand {
@@ -42,27 +222,117 @@
 }
 
 .glass-nav {
-    background-color: #6791bb !important;
+    background-color: rgba(18, 18, 18, 0.95) !important; /* Matches --bg-obsidian */
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* For Safari support */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.navbar .btn-info {
+    background-color: var(--surface-parchment);
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-dim);
+    transition: all 0.3s ease;
+}
+
+.navbar .btn-info:hover {
+    background-color: #333333; /* Slightly lighter gray on hover */
+    color: white !important;
+    border-color: var(--text-muted);
+}
+
+/* Update the "Login" button (currently .btn-outline-light in base.html) */
+.navbar .btn-outline-light {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.navbar .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: white;
 }
 
 /* Mobile Menu Readability Fix */
-@media (max-width: 991.98px) { /* Bootstrap's 'lg' breakpoint */
-    
-    /* When the menu is opened on the transparent homepage navbar */
-    #homeNavbar.navbar-transparent .navbar-collapse {
-        background-color: rgba(103, 145, 187, 0.95);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-top: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+@media (max-width: 991.98px) { 
+    #logo {
+        position: absolute;
+        max-width: 110px;
+        left: 33%;
+        top: -25%;
     }
     
-    /* Add some spacing to the links so they are easier to tap on mobile */
+    /* 1. Ensure the navbar container acts as the anchor point */
+    .navbar .container {
+        position: relative;
+    }
+
+    /* 2.5: Make the mobile menu transparent only when the parent navbar is transparent */
+    .navbar-transparent #mobileMenu {
+        background-color: transparent;
+        box-shadow: none; /* Removes the shadow so it doesn't look like an invisible floating box */
+    }
+
+    .w-100 {
+        margin-bottom: 2%;
+    }
+    /* 2. The Flex Fix + Floating Card Positioning */
+    #mobileMenu {
+        /* Your flex fix to stop the 100% width stretch */
+        flex-basis: auto;
+        flex-grow: 0;
+        
+        /* Absolutely center the menu directly under the navbar */
+        position: absolute;
+        top: 100%; 
+        left: 50%;
+        transform: translateX(-50%);
+        
+        /* Control the exact size of the floating menu */
+        width: 100%;
+        max-width: 350px;
+        
+        /* Card Styling */
+        background-color: rgba(26, 26, 26, 0.98);
+        padding: 1rem;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.5); /* Made shadow darker for dark mode */
+        margin-top: 0.5rem;
+    }
+
+    /* 3. Button & Link Spacing */
     .navbar-nav .nav-item {
         margin-bottom: 0.5rem;
         text-align: center;
     }
+
+    /* 4. The Dropdown (now perfectly contained inside the smaller card) */
+    .navbar-nav .dropdown-menu {
+        background-color: transparent;
+        border: none;
+        box-shadow: none !important;
+        text-align: center;
+        
+        /* Let it take up 100% of the new, smaller parent card */
+        width: 100%; 
+        padding: 0;
+    }
+
+    .navbar-nav .dropdown-item {
+        color: white; 
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-nav .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 0.25rem;
+    }
+
+    .navbar-nav .dropdown-header {
+        color: #f8f9fa; 
+    }
+    .navbar-toggler {
+        padding: 1% 2% 1% 2%;
+    }
 }
+

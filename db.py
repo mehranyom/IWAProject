@@ -72,9 +72,52 @@ def get_user_by_id(uid):
     conn.close()
     
     if user_row:
-        return User(id=user_row['UId'], username=user_row['username'], role=user_row['role'])
+        return User(id=user_row['UId'],
+                    username=user_row['username'],
+                    role=user_row['role'], 
+                    avatar_filename=user_row['avatar_filename'])
     return None
 
+def update_user_profile(user_id, new_username=None, new_password=None, new_avatar=None):
+    """Dynamically updates the user's profile data."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Store the exact columns we need to update
+    update_fields = []
+    params = []
+    
+    if new_username:
+        update_fields.append("username = ?")
+        params.append(new_username)
+        
+    if new_password:
+        update_fields.append("password_hash = ?")
+        params.append(generate_password_hash(new_password))
+        
+    if new_avatar:
+        update_fields.append("avatar_filename = ?")
+        params.append(new_avatar)
+        
+    # Safety check: if nothing was provided, just return True
+    if not update_fields:
+        return True
+        
+    # Join the fields together with commas
+    query = f"UPDATE users SET {', '.join(update_fields)} WHERE UId = ?"
+    params.append(user_id)
+    
+    try:
+        cursor.execute(query, tuple(params))
+        conn.commit()
+        success = True
+    except sqlite3.IntegrityError:
+        # This triggers if they try to change their username to one that already exists
+        success = False
+    finally:
+        conn.close()
+        
+    return success
 
 # to be completed to meet only one GM constraint
 """This Function hashes the password and inserts a new user into the database."""
@@ -112,7 +155,7 @@ def verify_user(username, password):
 
     # If the user exists AND the provided password matches the stored hash
     if user_row and check_password_hash(user_row['password_hash'], password):
-        return User(id=user_row['UId'], username=user_row['username'], role=user_row['role'])
+        return User(id=user_row['UId'], username=user_row['username'], role=user_row['role'], avatar_filename=user_row['avatar_filename'])
     
     return None
 
