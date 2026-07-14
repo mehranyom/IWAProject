@@ -18,7 +18,7 @@ def get_db_connection():
 
 
 ## to be implemented again
-def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None):
+def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None, warrior_req=0, mage_req=0, healer_req=0):
     """Fetches sessions joined with quest info, applying optional filters."""
     conn = get_db_connection()
     
@@ -41,6 +41,20 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None)
     if difficulty_filter:
         query += ' AND quests.difficulty = ?'
         params.append(difficulty_filter)
+
+
+    capacities = {'Warrior': (4, warrior_req), 'Mage': (3, mage_req), 'Healer': (2, healer_req)}
+    
+    for role_name, (max_cap, req_places) in capacities.items():
+        if req_places > 0:
+            query += '''
+                AND ? - (
+                    SELECT COALESCE(SUM(places_reserved), 0)
+                    FROM participations
+                    WHERE participations.SId = sessions.SId AND participations.party_role = ?
+                ) >= ?
+            '''
+            params.extend([max_cap, role_name, req_places])
 
     # Sort logically by Day of Week, then by Time
     query += '''
@@ -127,7 +141,7 @@ def create_user(username, password, role):
     query = 'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)'
     # Securely hash the password before saving
     hashed_password = generate_password_hash(password)
-    
+    success = False
     try:
         cursor.execute(query, (username, hashed_password, role))
         conn.commit()
@@ -212,7 +226,7 @@ Fetches all sessions an adventurer has currently joined to check limits and over
 def get_adventurer_schedule(uid):
     conn = get_db_connection()
     query = '''
-        SELECT sessions.SId, sessions.day, sessions.start_time, quests.duration
+        SELECT sessions.SId, sessions.day, sessions.start_time, quests.duration, participations.places_reserved
         FROM participations
         JOIN sessions ON participations.SId = sessions.SId
         JOIN quests ON sessions.QId = quests.QId
@@ -265,10 +279,10 @@ def get_user_participations(user_id):
     return participations
 
 def get_participation_by_id(participation_id, user_id):
-    """Fetches a specific participation to verify ownership and time before cancelling."""
+    """Fetches a specific participation to verify ownership and limits before modifying/cancelling."""
     conn = get_db_connection()
     query = '''
-        SELECT p.PId, s.day, s.start_time 
+        SELECT p.PId, p.SId, p.party_role, p.places_reserved, s.day, s.start_time 
         FROM participations p
         JOIN sessions s ON p.SId = s.SId
         WHERE p.PId = ? AND p.UId = ?
@@ -287,15 +301,27 @@ def cancel_participation(participation_id, user_id):
     conn.commit()
     conn.close()
 
+def update_participation(participation_id, user_id, new_role, new_places):
+    """Updates the role and reserved places for an existing participation."""
+    conn = get_db_connection()
+    query = '''
+        UPDATE participations 
+        SET party_role = ?, places_reserved = ? 
+        WHERE PId = ? AND UId = ?
+    '''
+    conn.execute(query, (new_role, new_places, participation_id, user_id))
+    conn.commit()
+    conn.close()
 
-"""Guild Master dashnpard related"""
+
+"""Guild Master dashboard related"""
 
 def get_gm_dashboard_stats():
-    """Fetches all sessions and aggregates participation stats per session."""
     conn = get_db_connection()
     
-    # We use LEFT JOIN so sessions with 0 participants still show up.
-    # COALESCE ensures we get 0 instead of NULL when no one has joined.
+    # Using LEFT JOIN on sessions ensures quests without sessions are included.
+    # We must GROUP BY q.QId as well, otherwise all quests without a session 
+    # would get bundled into a single row.
     query = '''
         SELECT 
             q.QId, q.title, 
@@ -305,9 +331,9 @@ def get_gm_dashboard_stats():
             COALESCE(SUM(CASE WHEN p.party_role = 'Mage' THEN p.places_reserved ELSE 0 END), 0) as mage_res,
             COALESCE(SUM(CASE WHEN p.party_role = 'Healer' THEN p.places_reserved ELSE 0 END), 0) as healer_res
         FROM quests q
-        JOIN sessions s ON q.QId = s.QId
+        LEFT JOIN sessions s ON q.QId = s.QId
         LEFT JOIN participations p ON s.SId = p.SId
-        GROUP BY s.SId
+        GROUP BY q.QId, s.SId
         ORDER BY q.title, 
         CASE s.day
             WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
@@ -318,8 +344,11 @@ def get_gm_dashboard_stats():
     conn.close()
     return stats
 
+
+"""
+Deletes a session strictly if zero adventurers have joined it.
+"""
 def cancel_session_if_empty(session_id):
-    """Deletes a session strictly if zero adventurers have joined it."""
     conn = get_db_connection()
     
     # Check participant count first
@@ -333,6 +362,29 @@ def cancel_session_if_empty(session_id):
         
     # Safe to delete
     cursor.execute('DELETE FROM sessions WHERE SId = ?', (session_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+def update_single_session_field(session_id, field_name, new_value):
+    """Updates a single session field strictly if zero adventurers have joined."""
+    # Strict whitelist to prevent SQL injection on column names
+    allowed_fields = ['day', 'start_time', 'location']
+    if field_name not in allowed_fields:
+        return False
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 1. Verify participant count is 0
+    cursor.execute('SELECT COUNT(*) as count FROM participations WHERE SId = ?', (session_id,))
+    if cursor.fetchone()['count'] > 0:
+        conn.close()
+        return False 
+        
+    # 2. Update the specific field dynamically
+    query = f'UPDATE sessions SET {field_name} = ? WHERE SId = ?'
+    cursor.execute(query, (new_value, session_id))
     conn.commit()
     conn.close()
     return True

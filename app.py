@@ -28,7 +28,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Simulated Current Time
-SIMULATED_DAY = "Wednesday"
+SIMULATED_DAY = "Monday"
 SIMULATED_TIME = "14:00"
 
 # constant variables
@@ -52,16 +52,25 @@ def index():
     day_filter = request.args.get('day')
     type_filter = request.args.get('quest_type')
     difficulty_filter = request.args.get('difficulty')
+    warrior_places = int(request.args.get('warrior_places', 0))
+    mage_places = int(request.args.get('mage_places', 0))
+    healer_places = int(request.args.get('healer_places', 0))
     
-    sessions = db.get_quest_program(day_filter, type_filter, difficulty_filter)
-    
+    sessions = db.get_quest_program(
+        day_filter, type_filter, difficulty_filter, 
+        warrior_places, mage_places, healer_places
+    )
+
     return render_template('index.html', 
                            sessions=sessions, 
                            current_day=SIMULATED_DAY, 
                            current_time=SIMULATED_TIME,
                            day_filter=day_filter,             
                            type_filter=type_filter,           
-                           difficulty_filter=difficulty_filter)
+                           difficulty_filter=difficulty_filter,
+                           warrior_places=warrior_places,
+                           mage_places=mage_places,
+                           healer_places=healer_places)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -174,14 +183,16 @@ def profile():
     
     # Convert rows to dictionaries to add the 'is_modifiable' flag
     participations = []
+    total_places = 0
     for row in raw_participations:
         part_dict = dict(row)
         part_dict['is_modifiable'] = util.can_modify_session(
             row['day'], row['start_time'], SIMULATED_DAY, SIMULATED_TIME
         )
+        total_places += row['places_reserved']
         participations.append(part_dict)
 
-    return render_template('adventurer_profile.html', participations=participations)
+    return render_template('adventurer_profile.html', participations=participations, total_places = total_places)
 
 @app.route('/profile/cancel/<int:participation_id>', methods=['POST'])
 @login_required
@@ -206,6 +217,48 @@ def cancel_booking(participation_id):
     flash("Quest participation cancelled successfully.", "success")
     return redirect(url_for('profile'))
 
+@app.route('/profile/modify/<int:participation_id>', methods=['POST'])
+@login_required
+def modify_booking(participation_id):
+    if current_user.role != AD:
+        return redirect(url_for('index'))
+
+    new_role = request.form.get('party_role')
+    new_places = int(request.form.get('places_reserved', 1))
+
+    part = db.get_participation_by_id(participation_id, current_user.UId)
+    
+    if not part:
+        flash("Participation record not found.", "danger")
+        return redirect(url_for('profile'))
+
+    # Re-verify the 8-hour rule
+    if not util.can_modify_session(part['day'], part['start_time'], SIMULATED_DAY, SIMULATED_TIME):
+        flash("Cannot modify. This session starts in less than 8 hours.", "danger")
+        return redirect(url_for('profile'))
+
+    # Check capacity constraints for the session
+    availability = db.get_role_availability(part['SId'])
+    
+    # "Refund" their currently held places to the availability pool to accurately test new capacity
+    availability[part['party_role']] = availability.get(part['party_role'], 0) + part['places_reserved']
+    
+    if availability.get(new_role, 0) < new_places:
+        flash(f"Not enough places available for {new_role}.", "danger")
+        return redirect(url_for('profile'))
+        
+    # Check the 3-place weekly limit
+    schedule = db.get_adventurer_schedule(current_user.UId)
+    current_total_places = sum(task['places_reserved'] for task in schedule)
+    
+    if (current_total_places - part['places_reserved'] + new_places) > 3:
+        flash("Modification exceeds your weekly limit of 3 quest places.", "danger")
+        return redirect(url_for('profile'))
+
+    db.update_participation(participation_id, current_user.UId, new_role, new_places)
+    flash("Quest participation modified successfully.", "success")
+    return redirect(url_for('profile'))
+
 @app.route('/gm/dashboard')
 @login_required
 def gm_dashboard():
@@ -221,39 +274,41 @@ def gm_dashboard():
     for row in raw_stats:
         qid = row['QId']
         
-        # Initialize the quest group if it doesn't exist yet
+        # Initialize the quest group (creates the card/section even if no sessions exist)
         if qid not in quests_grouped:
             quests_grouped[qid] = {
                 'title': row['title'],
                 'sessions': []
             }
         
-        # Calculate dynamic stats
-        roles = {
-            'Warrior': row['warrior_res'], 
-            'Mage': row['mage_res'], 
-            'Healer': row['healer_res']
-        }
-        
-        max_res = max(roles.values())
-        if max_res == 0:
-            most_requested = "None yet"
-        else:
-            # Gets all roles tied for the highest number (e.g., "Warrior, Mage")
-            most_requested = ", ".join([k for k, v in roles.items() if v == max_res])
+        # Only process and append session data if a session actually exists
+        if row['SId'] is not None:
+            # Calculate dynamic stats
+            roles = {
+                'Warrior': row['warrior_res'], 
+                'Mage': row['mage_res'], 
+                'Healer': row['healer_res']
+            }
+            
+            max_res = max(roles.values())
+            if max_res == 0:
+                most_requested = "None yet"
+            else:
+                # Gets all roles tied for the highest number
+                most_requested = ", ".join([k for k, v in roles.items() if v == max_res])
 
-        session_dict = dict(row)
-        session_dict['remaining_places'] = 9 - row['total_reserved'] # 4W + 3M + 2H = 9 total
-        session_dict['most_requested'] = most_requested
-        
-        quests_grouped[qid]['sessions'].append(session_dict)
+            session_dict = dict(row)
+            session_dict['remaining_places'] = 9 - row['total_reserved'] # 4W + 3M + 2H = 9 total
+            session_dict['most_requested'] = most_requested
+            
+            quests_grouped[qid]['sessions'].append(session_dict)
 
     return render_template('gm_dashboard.html', quests_grouped=quests_grouped)
 
 @app.route('/gm/cancel_session/<int:session_id>', methods=['POST'])
 @login_required
 def gm_cancel_session(session_id):
-    if current_user.role != 'guild_master':
+    if current_user.role != GM:
         return redirect(url_for('index'))
 
     success = db.cancel_session_if_empty(session_id)
@@ -265,6 +320,42 @@ def gm_cancel_session(session_id):
         
     return redirect(url_for('gm_dashboard'))
 
+@app.route('/gm/edit_session_field/<int:session_id>', methods=['POST'])
+@login_required
+def gm_edit_session_field(session_id):
+    if current_user.role != GM:
+        return redirect(url_for('index'))
+
+    # 'update_type' tells us which modal form was submitted (e.g., 'day', 'location')
+    update_type = request.form.get('update_type')
+    new_value = request.form.get('new_value')
+
+    if not update_type or not new_value:
+        flash("Invalid submission.", "danger")
+        return redirect(url_for('gm_dashboard'))
+    
+    # this statement will check if a modification happend to field that can cause overlap.
+    if update_type in ['day', 'start_time', 'location']:
+        session_row = db.get_session_details(session_id)
+        session_data = dict(session_row)
+        session_data[f'{update_type}'] = new_value
+        day = session_data['day']
+        start_time = session_data['start_time']
+        location = session_data['location']
+        # this statement will check the overlap after modification in day, start time or location
+        if db.check_session_overlap(day, start_time, location):
+                flash(f"Overlap detected: The {location} is already booked on {day} at {start_time}.", "danger")
+                return redirect(url_for('gm_dashboard'))
+
+    # Attempt the update using the DB function
+    success = db.update_single_session_field(session_id, update_type, new_value)
+    
+    if success:
+        flash(f"Session {update_type.replace('_', ' ')} updated successfully.", "success")
+    else:
+        flash("Cannot modify this session. Adventurers have already joined.", "danger")
+        
+    return redirect(url_for('gm_dashboard'))
 
 
 @app.route('/gm/create_quest', methods=['GET', 'POST'])
@@ -280,7 +371,20 @@ def create_quest():
         quest_type = request.form.get('quest_type')
         difficulty = request.form.get('difficulty')
         description = request.form.get('description')
-        image_filename = request.form.get('image_filename') # Can be empty
+        # Handle the uploaded file instead of a text filename
+        image_file = request.files.get('image_file')
+        image_filename = "" # Default to empty if no file is uploaded
+
+        if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+            original_filename = secure_filename(image_file.filename)
+            image_filename = f"quest_{original_filename}"
+            
+            # Create a directory for quest images if you want them separate from avatars
+            quest_upload_path = os.path.join('static', 'images', 'quests')
+            os.makedirs(quest_upload_path, exist_ok=True) 
+            
+            save_path = os.path.join(quest_upload_path, image_filename)
+            image_file.save(save_path)
 
         if not (title and duration and quest_type and difficulty):
             flash("Please fill in all mandatory fields.", "danger")

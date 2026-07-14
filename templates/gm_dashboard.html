@@ -20,6 +20,9 @@
             
             <div class="card-body p-4">
                 <div class="row row-cols-1 row-cols-lg-2 g-4">
+                    {% if not quest.sessions %}
+                        <p>there is no active session for this quest</p>
+                    {% endif %}
                     {% for session in quest.sessions %}
                         <div class="col">
                             <div class="card h-100 border-secondary">
@@ -55,14 +58,154 @@
                                         </li>
                                     </ul>
 
-                                    <div class="text-end mt-auto">
+                                    <div class="text-end mt-auto pt-3">
                                         {% if session.total_reserved == 0 %}
-                                            <form action="{{ url_for('gm_cancel_session', session_id=session.SId) }}" method="POST" onsubmit="return confirm('Permanently cancel this scheduled session?');">
-                                                <button type="submit" class="btn btn-outline-danger w-100">Cancel Session</button>
-                                            </form>
+                                            <div class="d-flex gap-2">
+                                                <!-- Opens the Main Management Modal -->
+                                                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#manageSessionModal{{ session.SId }}">
+                                                    Edit Details
+                                                </button>
+                                                
+                                                <form action="{{ url_for('gm_cancel_session', session_id=session.SId) }}" method="POST" onsubmit="return confirm('Permanently cancel this scheduled session?');" class="w-100">
+                                                    <button type="submit" class="btn btn-outline-danger w-100">Cancel</button>
+                                                </form>
+                                            </div>
                                         {% else %}
-                                            <button class="btn btn-outline-secondary w-100" disabled>Cannot Cancel (Active Party)</button>
+                                            <button class="btn btn-outline-secondary w-100" disabled>Cannot Modify (Active Party)</button>
                                         {% endif %}
+                                    </div>
+
+                                    <div class="modal fade" id="manageSessionModal{{ session.SId }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title">Edit Session Details</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body p-0">
+                                                    <!-- Matches your Account Settings UI style -->
+                                                    <ul class="list-group list-group-flush text-start">
+                                                        
+                                                        <!-- Day Field -->
+                                                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <small class="text-muted d-block mb-1">Day</small>
+                                                                <span class="fw-bold fs-5">{{ session.day }}</span>
+                                                            </div>
+                                                            <!-- Notice the target includes the SId -->
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#editDayModal{{ session.SId }}">✏️ Edit</button>
+                                                        </li>
+                                    
+                                                        <!-- Start Time Field -->
+                                                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <small class="text-muted d-block mb-1">Start Time</small>
+                                                                <span class="fw-bold fs-5">{{ session.start_time }}</span>
+                                                            </div>
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#editTimeModal{{ session.SId }}">✏️ Edit</button>
+                                                        </li>
+                                    
+                                                        <!-- Location Field -->
+                                                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <small class="text-muted d-block mb-1">Location</small>
+                                                                <span class="fw-bold fs-5">{{ session.location }}</span>
+                                                            </div>
+                                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#editLocationModal{{ session.SId }}">✏️ Edit</button>
+                                                        </li>
+                                    
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <!-- Edit Day Modal -->
+                                    <div class="modal fade" id="editDayModal{{ session.SId }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{{ url_for('gm_edit_session_field', session_id=session.SId) }}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Day</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <!-- 1. Add the 'for' attribute -->
+                                                        <label for="daySelect{{ session.SId }}" class="form-label">Select New Day</label>
+                                                        
+                                                        <!-- 2. Add the matching 'id' attribute -->
+                                                        <select id="daySelect{{ session.SId }}" name="new_value" class="form-select" required>
+                                                            {% for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                                                <option value="{{ d }}" {% if session.day == d %}selected{% endif %}>{{ d }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <!-- Target the Main Modal to go back instead of just closing -->
+                                                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageSessionModal{{ session.SId }}">Back</button>
+                                                        <button type="submit" class="btn btn-primary" name="update_type" value="day">Save Day</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Edit Time Modal -->
+                                    <div class="modal fade" id="editTimeModal{{ session.SId }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{{ url_for('gm_edit_session_field', session_id=session.SId) }}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Start Time</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <!-- 1. Add the 'for' attribute -->
+                                                        <label for="timeInput{{ session.SId }}" class="form-label">New Start Time</label>
+                                                        
+                                                        <!-- 2. Add the matching 'id' attribute -->
+                                                        <input id="timeInput{{ session.SId }}" type="time" name="new_value" class="form-control" value="{{ session.start_time }}" required>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageSessionModal{{ session.SId }}">Back</button>
+                                                        <button type="submit" class="btn btn-primary" name="update_type" value="start_time">Save Time</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Edit Location Modal -->
+                                    <div class="modal fade" id="editLocationModal{{ session.SId }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{{ url_for('gm_edit_session_field', session_id=session.SId) }}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Location</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <!-- 1. Add the 'for' attribute -->
+                                                            <label for="locationInput{{ session.SId }}" class="form-label">New Location</label>
+                                                            
+                                                            <!-- 2. Add the matching 'id' attribute -->
+                                                            <select class="form-select" id="location" name="new_value" required>
+                                                                <option value="" disabled selected>Select Location</option>
+                                                                <option value="Dungeon Hall">Dungeon Hall</option>
+                                                                <option value="Enchanted Forest">Enchanted Forest</option>
+                                                                <option value="Wizard Tower">Wizard Tower</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageSessionModal{{ session.SId }}">Back</button>
+                                                        <button type="submit" class="btn btn-primary" name="update_type" value="location">Save Location</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -45,11 +45,13 @@ def handle_booking_request(session_id, session_data, availability):
 
     schedule = db.get_adventurer_schedule(current_user.UId)
     
-    if len(schedule) >= 3:
-        flash("You have reached your weekly limit of 3 quest sessions.", "danger")
+    # Calculate total places reserved instead of total sessions
+    total_places_booked = sum(task['places_reserved'] for task in schedule)
+    
+    if total_places_booked + places > 3:
+        flash(f"Weekly limit reached! You can only reserve {3 - total_places_booked} more place(s) this week.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
 
-    # Call the new helper function here
     if has_time_overlap(session_data, schedule):
         flash("This session overlaps in time with another quest you have joined.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))

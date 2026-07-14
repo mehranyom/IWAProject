@@ -15,7 +15,7 @@
                 <hr>
                 <div class="d-flex justify-content-between px-3">
                     <span>Weekly Quests:</span>
-                    <strong>{{ participations|length }} / 3</strong>
+                    <strong>{{ total_places }} / 3</strong>
                 </div>
             </div>
         </div>
@@ -32,7 +32,11 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h5 class="card-title mb-1">{{ p.title }}</h5>
+                                        <h5 class="card-title mb-1">
+                                            <a href="{{ url_for('session_detail', session_id=p.session_id) }}" class="text-decoration-none text-primary">
+                                                {{ p.title }}
+                                            </a>
+                                        </h5>
                                         <p class="text-muted mb-2">
                                             <strong>{{ p.day }}</strong> at <strong>{{ p.start_time }}</strong> | {{ p.location }}
                                         </p>
@@ -42,13 +46,123 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="text-end">
+                                    <div class="text-end mt-3">
                                         {% if p.is_modifiable %}
+                                            <!-- Trigger Main Management Modal -->
+                                            <button type="button" class="btn btn-outline-primary btn-sm ms-1" data-bs-toggle="modal" data-bs-target="#manageParticipationModal{{ p.participation_id }}">
+                                                Modify
+                                            </button>
                                             <form action="{{ url_for('cancel_booking', participation_id=p.participation_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel your place in this quest?');">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel Joining</button>
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
                                             </form>
+                                    
+                                            <!-- Main Management Modal -->
+                                            <div class="modal fade text-start" id="manageParticipationModal{{ p.participation_id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-dark text-white">
+                                                            <h5 class="modal-title">Modify Participation</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body p-0">
+                                                            <ul class="list-group list-group-flush text-start">
+                                                                
+                                                                <!-- Role Field -->
+                                                                <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <small class="text-muted d-block mb-1">Party Role</small>
+                                                                        <span class="fw-bold fs-5">{{ p.party_role }}</span>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#editRoleModal{{ p.participation_id }}">✏️ Edit</button>
+                                                                </li>
+                                            
+                                                                <!-- Places Field -->
+                                                                <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <small class="text-muted d-block mb-1">Places Reserved</small>
+                                                                        <span class="fw-bold fs-5">{{ p.places_reserved }}</span>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#editPlacesModal{{ p.participation_id }}">✏️ Edit</button>
+                                                                </li>
+                                            
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Edit Role Modal -->
+                                            <div class="modal fade text-start" id="editRoleModal{{ p.participation_id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ url_for('modify_booking', participation_id=p.participation_id) }}">
+                                                            <!-- Hidden input to retain the current places_reserved value -->
+                                                            <input type="hidden" name="places_reserved" value="{{ p.places_reserved }}">
+                                                            
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Change Party Role</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="roleSelect{{ p.participation_id }}" class="form-label">Select New Role</label>
+                                                                    <select id="roleSelect{{ p.participation_id }}" name="party_role" class="form-select" required>
+                                                                        <option value="Warrior" {% if p.party_role == 'Warrior' %}selected{% endif %}>Warrior</option>
+                                                                        <option value="Mage" {% if p.party_role == 'Mage' %}selected{% endif %}>Mage</option>
+                                                                        <option value="Healer" {% if p.party_role == 'Healer' %}selected{% endif %}>Healer</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageParticipationModal{{ p.participation_id }}">Back</button>
+                                                                <button type="submit" class="btn btn-primary">Save Role</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Edit Places Modal -->
+                                            <div class="modal fade text-start" id="editPlacesModal{{ p.participation_id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ url_for('modify_booking', participation_id=p.participation_id) }}">
+                                                            <!-- Hidden input to retain the current party_role value -->
+                                                            <input type="hidden" name="party_role" value="{{ p.party_role }}">
+                                                            
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Change Reserved Places</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="placesSelect{{ p.participation_id }}" class="form-label">Select Number of Places</label>
+                                                                    <select id="placesSelect{{ p.participation_id }}" name="places_reserved" class="form-select" required>
+                                                                        <option value="1" {% if p.places_reserved == 1 %}selected{% endif %}>1 Place</option>
+                                                                        <option value="2" {% if p.places_reserved == 2 %}selected{% endif %}>2 Places</option>
+                                                                    </select>
+                                                                    <small class="text-muted mt-2 d-block">To cancel your place entirely, use the Cancel button on your profile.</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageParticipationModal{{ p.participation_id }}">Back</button>
+                                                                <button type="submit" class="btn btn-primary">Save Places</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             {% else %}
-                                            <span class="badge bg-secondary p-2">Locked (< 8 Hours)</span>
+                                                <!-- Wrapper handles the hover text and cursor -->
+                                                <span class="d-inline-block" title="This session starts in less than 8 hours and can no longer be modified or cancelled.">
+                                                <!-- Buttons are disabled and pass hover events to the wrapper -->
+                                                <button type="button" class="btn btn-outline-primary btn-sm ms-1" disabled style="pointer-events: none;">
+                                                    Modify
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" disabled style="pointer-events: none;">
+                                                    Cancel
+                                                </button>
+                                            </span>
                                         {% endif %}
                                     </div>
                                 </div>
