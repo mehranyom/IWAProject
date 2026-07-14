@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="border-bottom pb-2">Guild Quests Board</h2>
+        <p class="text-muted">Browse all available quests registered with the Guild.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for quest in quests %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-dark">
+            {% if quest.image_filename %}
+                <img src="{{ url_for('static', filename='images/quests/' + quest.image_filename) }}" class="card-img-top" alt="{{ quest.title }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <span>No Image Available</span>
+                </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ quest.title }}</h5>
+                <div class="mb-2">
+                    <span class="badge bg-danger">{{ quest.difficulty | title }}</span>
+                    <span class="badge bg-info text-dark">{{ quest.quest_type | title }}</span>
+                </div>
+                <p class="card-text text-truncate">{{ quest.description }}</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0 d-grid">
+                <a href="{{ url_for('quest_detail', quest_id=quest.QId) }}" class="btn btn-outline-primary">View Details & Sessions</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">No quests have been forged yet.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

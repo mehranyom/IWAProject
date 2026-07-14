@@ -154,6 +154,22 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+
+@app.route('/quests')
+def all_quests():
+    quests = db.get_all_quests_details()
+    return render_template('quests.html', quests=quests)
+
+@app.route('/quest/<int:quest_id>')
+def quest_detail(quest_id):
+    quest, sessions = db.get_quest_and_sessions(quest_id)
+    
+    if not quest:
+        flash("Quest not found.", "danger")
+        return redirect(url_for('all_quests'))
+        
+    return render_template('quest_detail.html', quest=quest, sessions=sessions)
+
 """ task 4. Quest session. to be ckecked."""
 @app.route('/session/<int:session_id>', methods=['GET', 'POST'])
 def session_detail(session_id):

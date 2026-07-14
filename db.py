@@ -173,6 +173,39 @@ def verify_user(username, password):
     
     return None
 
+def get_all_quests_details():
+    """Fetches all quests from the database to display on the main quests page."""
+    conn = get_db_connection()
+    quests = conn.execute('SELECT * FROM quests ORDER BY title').fetchall()
+    conn.close()
+    return quests
+
+def get_quest_and_sessions(quest_id):
+    """Fetches a specific quest's details and all sessions related to it."""
+    conn = get_db_connection()
+    
+    quest = conn.execute('SELECT * FROM quests WHERE QId = ?', (quest_id,)).fetchone()
+    
+    # Sort logically by Day of Week, then by Time
+    sessions_query = '''
+        SELECT SId, day, start_time, location 
+        FROM sessions 
+        WHERE QId = ? 
+        ORDER BY 
+        CASE day
+            WHEN 'Monday' THEN 1
+            WHEN 'Tuesday' THEN 2
+            WHEN 'Wednesday' THEN 3
+            WHEN 'Thursday' THEN 4
+            WHEN 'Friday' THEN 5
+            WHEN 'Saturday' THEN 6
+            WHEN 'Sunday' THEN 7
+        END, start_time ASC
+    '''
+    sessions = conn.execute(sessions_query, (quest_id,)).fetchall()
+    conn.close()
+    
+    return quest, sessions
 
 """ these 3 function are for task 4. Quest session detail.
 these has to be checked."""
