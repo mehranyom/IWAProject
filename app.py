@@ -31,7 +31,7 @@ def allowed_file(filename):
 
 # Simulated Current Time
 SIMULATED_DAY = "Monday"
-SIMULATED_TIME = "14:00"
+SIMULATED_TIME = "10:00"
 
 # constant variables
 GM = 'Guild Master'
@@ -169,6 +169,7 @@ def quest_detail(quest_id):
 
 """ task 4. Quest session. to be ckecked."""
 @app.route('/session/<int:session_id>', methods=['GET', 'POST'])
+@app.route('/session/<int:session_id>', methods=['GET', 'POST'])
 def session_detail(session_id):
     
     session_data = db.get_session_details(session_id)
@@ -178,11 +179,28 @@ def session_detail(session_id):
 
     availability = db.get_role_availability(session_id)
 
+    # Calculate if the session is expired
+    session_total = util.get_total_hours(session_data['day'], session_data['start_time'])
+    current_total = util.get_total_hours(SIMULATED_DAY, SIMULATED_TIME)
+    is_expired = session_total < current_total
+
     # Delegate the heavy lifting to the helper function
     if request.method == 'POST':
-        return util.handle_booking_request(session_id, session_data, availability)
+        return util.handle_booking_request(
+            session_id, 
+            session_data, 
+            availability,
+            SIMULATED_DAY,
+            SIMULATED_TIME
+        )
 
-    return render_template('session_detail.html', session=session_data, availability=availability)
+    # Pass is_expired to the template
+    return render_template(
+        'session_detail.html', 
+        session=session_data, 
+        availability=availability,
+        is_expired=is_expired
+    )
 
 
 @app.route('/profile')
@@ -339,7 +357,6 @@ def gm_edit_session_field(session_id):
     if current_user.role != GM:
         return redirect(url_for('index'))
 
-    # 'update_type' tells us which modal form was submitted (e.g., 'day', 'location')
     update_type = request.form.get('update_type')
     new_value = request.form.get('new_value')
 
@@ -347,18 +364,21 @@ def gm_edit_session_field(session_id):
         flash("Invalid submission.", "danger")
         return redirect(url_for('gm_dashboard'))
     
-    # this statement will check if a modification happend to field that can cause overlap.
+    # Check if a modification happened to a field that can cause overlap
     if update_type in ['day', 'start_time', 'location']:
         session_row = db.get_session_details(session_id)
         session_data = dict(session_row)
         session_data[f'{update_type}'] = new_value
+        
         day = session_data['day']
         start_time = session_data['start_time']
         location = session_data['location']
-        # this statement will check the overlap after modification in day, start time or location
-        if db.check_session_overlap(day, start_time, location):
-                flash(f"Overlap detected: The {location} is already booked on {day} at {start_time}.", "danger")
-                return redirect(url_for('gm_dashboard'))
+        duration = session_data['duration'] # Extracted from the joined query
+        
+        # --- UPDATED: Pass duration and exclude the current session ID ---
+        if db.check_session_overlap(day, start_time, duration, location, exclude_session_id=session_id):
+            flash(f"Overlap detected: The {location} is already booked on {day} around {start_time}.", "danger")
+            return redirect(url_for('gm_dashboard'))
 
     # Attempt the update using the DB function
     success = db.update_single_session_field(session_id, update_type, new_value)
@@ -429,9 +449,13 @@ def schedule_session():
             flash("All fields are required to schedule a session.", "danger")
             return redirect(url_for('schedule_session'))
 
-        # The Overlap Check
-        if db.check_session_overlap(day, start_time, location):
-            flash(f"Overlap detected: The {location} is already booked on {day} at {start_time}.", "danger")
+        # --- UPDATED: Fetch the quest duration first ---
+        quest_data, _ = db.get_quest_and_sessions(quest_id)
+        duration = quest_data['duration']
+
+        # --- UPDATED: Pass the duration into the overlap check ---
+        if db.check_session_overlap(day, start_time, duration, location):
+            flash(f"Overlap detected: The {location} is already booked on {day} around {start_time}.", "danger")
             return redirect(url_for('schedule_session'))
 
         db.schedule_session(quest_id, day, start_time, location)

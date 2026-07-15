@@ -8,9 +8,9 @@
     --accent-magic: #39FF14; /* Neon Green Glow */
     
     /* Role Colors */
-    --role-warrior: #DC143C;
-    --role-mage: #00BFFF;
-    --role-healer: #50C878;
+    --role-warrior: #dc7e14;
+    --role-mage: #00b0ff;
+    --role-healer: #92c850;
     
     --border-dim: #333333;
 }
@@ -19,7 +19,7 @@
 body {
     background-color: var(--bg-obsidian);
     color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
+    font-family: 'EB Garamond', serif;
 }
 
 h1, h2, h3, h4, h5, h6, .navbar-brand {
@@ -50,7 +50,7 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 .form-control, .form-select {
-    background-color: #1E1E1E;
+    background-color: #646464;
     border: 1px solid var(--border-dim);
     color: var(--text-primary);
 }
@@ -63,6 +63,10 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 /* --- 4. BUTTONS & GLOWS --- */
+.btn-outline-dark{
+    --bs-btn-bg: #ffffff;
+}
+
 .btn-primary {
     background-color: var(--accent-magic);
     color: #121212; /* Dark text for high contrast */
@@ -73,9 +77,9 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #4dff2b; /* Slightly brighter on hover */
+    background-color: #4dff2b !important; /* Slightly brighter on hover */
     color: #000;
-    box-shadow: 0 0 18px rgba(57, 255, 20, 0.6);
+    box-shadow: 0 0 18px rgba(57, 255, 20, 0.6) !important;
     transform: translateY(-1px);
 }
 
@@ -85,9 +89,6 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 .quest-card:hover {
-    transform: translateY(-4px);
-    background-color: #333333 !important; /* Brighten slightly */
-    /* Faint spread-out border shadow using the accent color */
     box-shadow: 0 8px 20px rgba(57, 255, 20, 0.08) !important; 
     border-color: rgba(57, 255, 20, 0.3) !important;
 }
@@ -102,9 +103,13 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 /* --- 7. ROLE BADGES & PIPS --- */
-.badge-warrior { background-color: var(--role-warrior); color: white; }
-.badge-mage { background-color: var(--role-mage); color: white; }
-.badge-healer { background-color: var(--role-healer); color: black; }
+.badge {
+    color: white;
+}
+.badge-warrior { background-color: var(--role-warrior); width: 55px; }
+.badge-mage { background-color: var(--role-mage); width: 55px;}
+.badge-healer { background-color: var(--role-healer); width: 55px;}
+
 
 .capacity-tray {
     display: flex;
@@ -133,16 +138,12 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     background-color: transparent !important; /* Lets the dark card background show through */
     color: var(--text-primary) !important;
     border-color: var(--border-dim) !important;
-    font-family: 'Inter', sans-serif !important; /* Forces the correct body font */
 }
 
 /* Optional: If you want the roles (Warrior, Mage, Healer) to look more dramatic, 
    you can use the Guild font instead by changing the line above to:
    font-family: 'Cinzel', serif !important; 
 */
-
-
-
 
 .avatar {
     width: 100px;
@@ -226,6 +227,7 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-dim);
+    z-index: 10000;
 }
 
 .navbar .btn-info {
@@ -254,7 +256,7 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
 }
 
 /* Mobile Menu Readability Fix */
-@media (max-width: 991.98px) { 
+@media (max-width: 768px) { 
     #logo {
         position: absolute;
         max-width: 110px;
@@ -336,8 +338,6 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     }
 }
 
-
-
 /* --- Quest Detail Page Styles --- */
 
 /* Isolated Box Layout */
@@ -387,7 +387,7 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     color: #ffffff;
 }
 
-#duration{
+/* #duration{
     background-color: rgba(0, 0, 255, 0.388);
 }
 
@@ -395,15 +395,14 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     background-color: rgba(255, 0, 0, 0.382);
 }
 
-#difficulty{
+.hero-stat#difficulty{
     background-color: rgba(0, 255, 17, 0.396);
-}
-
-
+} */
 
 .hero-stat {
-    padding: 0% 2% 0% 2%;
-    margin-bottom: 0.5%;
+    opacity: 0.95;
+    padding: 1% 2% 1% 2%;
+    margin-bottom: 1.5%;
     width: fit-content;
     border: hidden;
     border-radius: 24px;
@@ -450,4 +449,133 @@ small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; 
     background-color: rgba(13, 110, 253, 0.08);
     border-left-color: #0d6efd;
     font-weight: 700;
+}
+
+/* --- 10. REFACTORED INLINE STYLES --- */
+.avatar-mobile {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.avatar-desktop {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+}
+
+.avatar-default {
+    background-color: #fff;
+}
+
+.custom-dropdown-menu {
+    background-color: var(--surface-parchment);
+    border: 1px solid var(--border-dim);
+}
+
+.custom-dropdown-divider {
+    border-color: #989898;
+}
+
+/* Profile Page Avatars */
+.avatar-lg {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+}
+
+.avatar-default-bg {
+    background-color: #e9ecef;
+}
+
+.btn-avatar-edit {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Quest Results */
+#quest-results {
+    padding-top: 20px;
+}
+
+/* Narrow Input Groups */
+.input-group-narrow {
+    width: 110px;
+}
+
+/* Quest Description Text */
+.text-pre-wrap {
+    white-space: pre-wrap;
+}
+
+/* Sidebar TOC Sticky Offset */
+#toc-nav {
+    top: 100px;
+}
+
+/* Quest Card Images & Placeholders */
+.quest-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.quest-img-placeholder {
+    height: 200px;
+}
+
+.card-title{
+    white-space: nowrap;       
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-truncate-2{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;           /* Set the maximum number of lines here */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.btn-outline-dark:hover{
+    box-shadow: 0 0 16px rgb(184 184 184 / 41%);
+    background-color: #21252900;
+}
+
+.btn-success {
+    --bs-btn-bg: #198754 !important;
+}
+
+.text-light:hover{
+    color: #212529 !important;
+}
+
+.dropdown-header {
+    color: #ffffff;
+}
+
+.btn-sm-1 {
+    background-color: #ff0000;
+    color: #ffffff;
+}
+
+.role-filter {
+    color: #ffffff;
+}
+
+
+#filter-form{
+    margin-bottom: 0.75vh;
+}
+
+.modal-content {
+    padding: 6% 3% 6% 3%;
+    position: absolute;
+    left: 5%;
+    width: 90%;
+    background-color: #000000;
+    box-shadow: 0px 0px 16px #dbdbdb;
 }

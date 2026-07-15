@@ -1,6 +1,7 @@
 import sqlite3
 from model import User
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 
 """
 this function will connect the database and return conn.
@@ -453,14 +454,41 @@ def get_all_quests_for_dropdown():
     conn.close()
     return quests
 
-def check_session_overlap(day, start_time, location):
-    """Returns True if another session shares the exact day, time, and location."""
+def check_session_overlap(day, start_time, duration, location, exclude_session_id=None):
+    """Returns True if the new session time window overlaps with any existing session at the same location."""
     conn = get_db_connection()
-    query = 'SELECT COUNT(*) as count FROM sessions WHERE day = ? AND start_time = ? AND location = ?'
-    result = conn.execute(query, (day, start_time, location)).fetchone()
+    
+    # Fetch all sessions for that day and location, joining with quests to get their durations
+    query = '''
+        SELECT s.SId, s.start_time, q.duration 
+        FROM sessions s
+        JOIN quests q ON s.QId = q.QId
+        WHERE s.day = ? AND s.location = ?
+    '''
+    params = [day, location]
+    
+    # If modifying an existing session, exclude it from the overlap check
+    if exclude_session_id:
+        query += ' AND s.SId != ?'
+        params.append(exclude_session_id)
+        
+    existing_sessions = conn.execute(query, params).fetchall()
     conn.close()
     
-    return result['count'] > 0
+    # Calculate start and end times for the new session
+    new_start = datetime.strptime(start_time, '%H:%M')
+    new_end = new_start + timedelta(minutes=int(duration))
+    
+    # Check against all existing sessions at that location
+    for session in existing_sessions:
+        task_start = datetime.strptime(session['start_time'], '%H:%M')
+        task_end = task_start + timedelta(minutes=session['duration'])
+        
+        # Formula for time overlap: (Start A < End B) and (Start B < End A)
+        if new_start < task_end and task_start < new_end:
+            return True
+            
+    return False
 
 def schedule_session(quest_id, day, start_time, location):
     """Inserts a new scheduled session."""

@@ -26,7 +26,7 @@ def has_time_overlap(new_session, schedule):
             
     return False
 
-def handle_booking_request(session_id, session_data, availability):
+def handle_booking_request(session_id, session_data, availability, current_day, current_time):
     """Processes all validation checks for joining a quest."""
     if not current_user.is_authenticated:
         flash("You must be logged in to join a quest.", "warning")
@@ -35,6 +35,15 @@ def handle_booking_request(session_id, session_data, availability):
     if current_user.role != 'Adventurer':
         flash("Guild Masters cannot join quest sessions.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
+
+    # --- NEW CHECK: Prevent booking past sessions ---
+    session_total = get_total_hours(session_data['day'], session_data['start_time'])
+    current_total = get_total_hours(current_day, current_time)
+    
+    if session_total < current_total:
+        flash("You cannot join a quest session that has already passed.", "danger")
+        return redirect(url_for('session_detail', session_id=session_id))
+    # ------------------------------------------------
 
     party_role = request.form.get('party_role')
     places = int(request.form.get('places_reserved', 1))

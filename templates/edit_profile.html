@@ -9,12 +9,12 @@
                 
                 <div class="mb-4 position-relative d-inline-block">
                     {% if current_user.avatar_filename %}
-                        <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" alt="Avatar" class="rounded-circle shadow-sm border" style="width: 130px; height: 130px; object-fit: cover;">
+                        <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" alt="Avatar" class="rounded-circle shadow-sm border avatar-lg">
                     {% else %}
-                        <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" alt="Default Avatar" class="rounded-circle shadow-sm border" style="width: 130px; height: 130px; object-fit: cover; background-color: #e9ecef;">
+                        <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" alt="Default Avatar" class="rounded-circle shadow-sm border avatar-lg avatar-default-bg">
                     {% endif %}
                     
-                    <button type="button" class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0 mb-1 me-1 shadow" data-bs-toggle="modal" data-bs-target="#avatarModal" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 14px;" title="Change Avatar">
+                    <button type="button" class="btn btn-light btn-sm rounded-circle position-absolute bottom-0 end-0 mb-1 me-1 shadow btn-avatar-edit" data-bs-toggle="modal" data-bs-target="#avatarModal" title="Change Avatar">
                         ✏️
                     </button>
                 </div>
@@ -40,7 +40,11 @@
                 </ul>
 
                 <div class="text-start mt-4">
-                    <a href="{{ url_for('profile') }}" class="btn btn-light border w-100">Back to Profile</a>
+                    {% if current_user.role == 'Guild Master' %}
+                    <a href="{{ url_for('gm_dashboard') }}" class="btn btn-light border w-100">Back to Master Hall</a>
+                    {% else %}
+                    <a href="{{ url_for('profile') }}" class="btn btn-light border w-100">Back to your Profile</a>
+                    {% endif %}
                 </div>
                 
             </div>
@@ -85,7 +89,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="username" class="form-label">New Username</label>
-                        <input class="form-control" type="text" id="username" name="username" value="{{ current_user.username }}" required>
+                        <input class="form-control" type="text" id="username" name="username" value="{{ current_user.username }}" pattern="[A-Za-z]{3,10}" minlength="3"
+                        maxlength="10" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -109,7 +114,8 @@
                 <div class="modal-body text-start">
                     <div class="mb-3">
                         <label for="password" class="form-label">New Password</label>
-                        <input class="form-control" type="password" id="password" name="password" required>
+                        <input class="form-control" type="password" id="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" required>
                     </div>
                     <div class="mb-3">
                         <label for="confirm_password" class="form-label">Confirm New Password</label>

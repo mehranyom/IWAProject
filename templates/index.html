@@ -1,157 +1,180 @@
 {% extends 'base.html' %}
 
 {% block full_width %}
-    <div class="hero-banner-wrapper">
+<div class="hero-banner-wrapper">
         <video autoplay loop muted playsinline class="background-video">
             <source src="{{ url_for('static', filename='videos/banner.mp4') }}" type="video/mp4">
         </video>
     
-        <div class="video-overlay"></div>
+    <div class="video-overlay"></div>
     
-        <div class="hero-content">
-            <h1 class="display-3 fw-bold">Welcome to Dragon's Rest</h1>
-            <p class="lead">Secure your party role in this week's quests.</p>
+        <div class="hero-content w-100 d-flex flex-column align-items-center justify-content-center overflow-hidden">
+    
+            <h1>Start Adventuring in Guild Hall</h1>
+            
+            <p class="lead mt-3">Secure your party role in this week's quests.</p>
+            
+            <a href="#quest-results" class="btn btn-primary btn-lg mt-4 px-5 rounded-pill shadow">
+                View Quest Sessions
+            </a>
+            
         </div>
     </div>
 {% endblock %}
 
 {% block content %}
-<div id="quest-results" style="padding-top: 20px;"></div>
+<div id="quest-results"></div>
 <section class="mb-4">
     <h2>Weekly Quest Program</h2>
     <p>Browse available adventures and secure your party role.</p>
     
-    <form method="GET" action="{{ url_for('index') }}" class="row g-3 bg-light p-3 rounded align-items-end">
-        <!-- Existing Filters -->
-        <div class="col-md-2">
-            <label for="day" class="form-label">Day</label>
-            <select name="day" id="day" class="form-select">
-                <option value="">All Days</option>
-                <option value="Monday" {% if day_filter == 'Monday' %}selected{% endif %}>Monday</option>
-                <option value="Tuesday" {% if day_filter == 'Tuesday' %}selected{% endif %}>Tuesday</option>
-                <option value="Wednesday" {% if day_filter == 'Wednesday' %}selected{% endif %}>Wednesday</option>
-                <option value="Thursday" {% if day_filter == 'Thursday' %}selected{% endif %}>Thursday</option>
-                <option value="Friday" {% if day_filter == 'Friday' %}selected{% endif %}>Friday</option>
-                <option value="Saturday" {% if day_filter == 'Saturday' %}selected{% endif %}>Saturday</option>
-                <option value="Sunday" {% if day_filter == 'Sunday' %}selected{% endif %}>Sunday</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="quest_type" class="form-label">Quest Type</label>
-            <select name="quest_type" id="quest_type" class="form-select">
-                <option value="">All Types</option>
-                <option value="combat" {% if type_filter == 'combat' %}selected{% endif %}>Combat</option>
-                <option value="exploration" {% if type_filter == 'exploration' %}selected{% endif %}>Exploration</option>
-                <option value="stealth" {% if type_filter == 'stealth' %}selected{% endif %}>Stealth</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="difficulty" class="form-label">Difficulty</label>
-            <select name="difficulty" id="difficulty" class="form-select">
-                <option value="">All Difficulties</option>
-                <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Easy</option>
-                <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Medium</option>
-                <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Hard</option>
-                <option value="legendary" {% if difficulty_filter == 'legendary' %}selected{% endif %}>Legendary</option>
-            </select>
-        </div>
-        
-       <!-- Custom Role Availability Dropdown -->
-<div class="col-md-4">
-    <label class="form-label">Required Role Slots</label>
-    <div class="dropdown">
-        <button class="btn btn-white border w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center bg-white" type="button" id="roleDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-            Select Roles & Places
-        </button>
-        <div class="dropdown-menu p-3 w-100" aria-labelledby="roleDropdown">
+    <form method="GET" action="{{ url_for('index') }}" class="bg-light p-3 rounded align-items-end" id="filter-form">
+        <div class="row g-3 align-items-end">
+            <!-- Existing Filters -->
+            <div class="col-md-2">
+                <label for="day" class="form-label">Day</label>
+                <select name="day" id="day" class="form-select">
+                    <option value="">All Days</option>
+                    <option value="Monday" {% if day_filter == 'Monday' %}selected{% endif %}>Monday</option>
+                    <option value="Tuesday" {% if day_filter == 'Tuesday' %}selected{% endif %}>Tuesday</option>
+                    <option value="Wednesday" {% if day_filter == 'Wednesday' %}selected{% endif %}>Wednesday</option>
+                    <option value="Thursday" {% if day_filter == 'Thursday' %}selected{% endif %}>Thursday</option>
+                    <option value="Friday" {% if day_filter == 'Friday' %}selected{% endif %}>Friday</option>
+                    <option value="Saturday" {% if day_filter == 'Saturday' %}selected{% endif %}>Saturday</option>
+                    <option value="Sunday" {% if day_filter == 'Sunday' %}selected{% endif %}>Sunday</option>
+                </select>
+            </div>
             
-            <!-- Warrior -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="fw-bold">Warrior</span>
-                <div class="input-group input-group-sm" style="width: 110px;">
-                    <button class="btn btn-outline-secondary btn-minus" type="button" data-target="warrior_places">-</button>
-                    <input type="number" name="warrior_places" id="warrior_places" class="form-control text-center bg-white" value="{{ warrior_places|default(0) }}" min="0" max="4" readonly>
-                    <button class="btn btn-outline-secondary btn-plus" type="button" data-target="warrior_places">+</button>
+            <div class="col-md-2">
+                <label for="quest_type" class="form-label">Quest Type</label>
+                <select name="quest_type" id="quest_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="combat" {% if type_filter == 'combat' %}selected{% endif %}>Combat</option>
+                    <option value="exploration" {% if type_filter == 'exploration' %}selected{% endif %}>Exploration</option>
+                    <option value="stealth" {% if type_filter == 'stealth' %}selected{% endif %}>Stealth</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="difficulty" class="form-label">Difficulty</label>
+                <select name="difficulty" id="difficulty" class="form-select">
+                    <option value="">All Difficulties</option>
+                    <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>Hard</option>
+                    <option value="legendary" {% if difficulty_filter == 'legendary' %}selected{% endif %}>Legendary</option>
+                </select>
+            </div>
+            
+            <!-- Custom Role Availability Dropdown -->
+            <div class="col-md-4">
+                <label class="form-label">Required Role Slots</label>
+                <div class="dropdown">
+                    <!-- Replaced btn classes with form-select to match the rest of the form -->
+                    <button class="form-select text-start w-100" type="button" id="roleDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                        Select Roles & Places
+                    </button>
+                    
+                    <!-- Added custom-dropdown-menu to apply your dark theme -->
+                    <div class="dropdown-menu p-3 w-100 custom-dropdown-menu" aria-labelledby="roleDropdown">
+                        
+                        <!-- Warrior -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold role-filter">Warrior</span>
+                            <div class="input-group input-group-sm input-group-narrow">
+                                <button class="btn btn-outline-secondary btn-minus" type="button" data-target="warrior_places">-</button>
+                                <!-- Removed bg-white to let .form-control handle the dark styling -->
+                                <input type="number" name="warrior_places" id="warrior_places" class="form-control text-center" value="{{ warrior_places|default(0) }}" min="0" max="4" readonly>
+                                <button class="btn btn-outline-secondary btn-plus" type="button" data-target="warrior_places">+</button>
+                            </div>
+                        </div>
+            
+                        <!-- Mage -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold role-filter">Mage</span>
+                            <div class="input-group input-group-sm input-group-narrow">
+                                <button class="btn btn-outline-secondary btn-minus" type="button" data-target="mage_places">-</button>
+                                <input type="number" name="mage_places" id="mage_places" class="form-control text-center" value="{{ mage_places|default(0) }}" min="0" max="3" readonly>
+                                <button class="btn btn-outline-secondary btn-plus" type="button" data-target="mage_places">+</button>
+                            </div>
+                        </div>
+            
+                        <!-- Healer -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold role-filter">Healer</span>
+                            <div class="input-group input-group-sm input-group-narrow">
+                                <button class="btn btn-outline-secondary btn-minus" type="button" data-target="healer_places">-</button>
+                                <input type="number" name="healer_places" id="healer_places" class="form-control text-center" value="{{ healer_places|default(0) }}" min="0" max="2" readonly>
+                                <button class="btn btn-outline-secondary btn-plus" type="button" data-target="healer_places">+</button>
+                            </div>
+                        </div>
+            
+                    </div>
                 </div>
             </div>
-
-            <!-- Mage -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="fw-bold">Mage</span>
-                <div class="input-group input-group-sm" style="width: 110px;">
-                    <button class="btn btn-outline-secondary btn-minus" type="button" data-target="mage_places">-</button>
-                    <input type="number" name="mage_places" id="mage_places" class="form-control text-center bg-white" value="{{ mage_places|default(0) }}" min="0" max="3" readonly>
-                    <button class="btn btn-outline-secondary btn-plus" type="button" data-target="mage_places">+</button>
-                </div>
+            
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
             </div>
-
-            <!-- Healer -->
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold">Healer</span>
-                <div class="input-group input-group-sm" style="width: 110px;">
-                    <button class="btn btn-outline-secondary btn-minus" type="button" data-target="healer_places">-</button>
-                    <input type="number" name="healer_places" id="healer_places" class="form-control text-center bg-white" value="{{ healer_places|default(0) }}" min="0" max="3" readonly>
-                    <button class="btn btn-outline-secondary btn-plus" type="button" data-target="healer_places">+</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-        
-        <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
     </form>
 
     {% if day_filter or type_filter or difficulty_filter or warrior_places > 0 or mage_places > 0 or healer_places > 0 %}
-<div class="mb-4 p-3 bg-white border rounded d-flex flex-wrap align-items-center gap-2">
-    <span class="fw-bold me-2">Active Filters:</span>
+    <div class="mb-4 p-3 bg-white border rounded d-flex flex-column gap-3">
     
-    {% if day_filter %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Day: {{ day_filter }}
-        <a href="{{ url_for('index', quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove day filter">&times;</a>
-    </span>
-    {% endif %}
-
-    {% if type_filter %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Type: {{ type_filter|capitalize }}
-        <a href="{{ url_for('index', day=day_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove type filter">&times;</a>
-    </span>
-    {% endif %}
-
-    {% if difficulty_filter %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Difficulty: {{ difficulty_filter|capitalize }}
-        <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove difficulty filter">&times;</a>
-    </span>
-    {% endif %}
-
-    {% if warrior_places and warrior_places > 0 %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Warrior: {{ warrior_places }}
-        <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove warrior filter">&times;</a>
-    </span>
-    {% endif %}
-
-    {% if mage_places and mage_places > 0 %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Mage: {{ mage_places }}
-        <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove mage filter">&times;</a>
-    </span>
-    {% endif %}
-
-    {% if healer_places and healer_places > 0 %}
-    <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
-        Healer: {{ healer_places }}
-        <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove healer filter">&times;</a>
-    </span>
-    {% endif %}
-
-    <a href="{{ url_for('index', cleared='true') }}" class="btn btn-sm btn-outline-danger ms-auto">Clear All</a>
-</div>
+        <!-- Top Section: Label and Badges -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-bold me-2">Active Filters:</span>
+            
+            {% if day_filter %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Day: {{ day_filter }}
+                <a href="{{ url_for('index', quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove day filter">&times;</a>
+            </span>
+            {% endif %}
+    
+            {% if type_filter %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Type: {{ type_filter|capitalize }}
+                <a href="{{ url_for('index', day=day_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove type filter">&times;</a>
+            </span>
+            {% endif %}
+    
+            {% if difficulty_filter %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Difficulty: {{ difficulty_filter|capitalize }}
+                <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, warrior_places=warrior_places, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove difficulty filter">&times;</a>
+            </span>
+            {% endif %}
+    
+            {% if warrior_places and warrior_places > 0 %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Warrior: {{ warrior_places }}
+                <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, mage_places=mage_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove warrior filter">&times;</a>
+            </span>
+            {% endif %}
+    
+            {% if mage_places and mage_places > 0 %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Mage: {{ mage_places }}
+                <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, healer_places=healer_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove mage filter">&times;</a>
+            </span>
+            {% endif %}
+    
+            {% if healer_places and healer_places > 0 %}
+            <span class="badge bg-primary d-flex align-items-center p-2 fs-6">
+                Healer: {{ healer_places }}
+                <a href="{{ url_for('index', day=day_filter, quest_type=type_filter, difficulty=difficulty_filter, warrior_places=warrior_places, mage_places=mage_places) }}" class="text-white ms-2 text-decoration-none fw-bold" aria-label="Remove healer filter">&times;</a>
+            </span>
+            {% endif %}
+        </div>
+    
+        <!-- Bottom Section: Clear All Button -->
+        <div class="d-flex">
+            <a href="{{ url_for('index', cleared='true') }}" class="btn btn-sm-1 btn-outline-danger">Clear All</a>
+        </div>
+        
+    </div>
 {% endif %}
     
     <section class="mt-4">
@@ -199,6 +222,8 @@
 </section>
 
 {% block scripts %}
+
+<!-- Typed.js Configuration -->
 <script>
     // Listen for the user scrolling
     window.addEventListener('scroll', function() {
@@ -249,7 +274,7 @@
                 // A tiny delay ensures the browser has fully built the page layout before calculating the scroll distance
                 setTimeout(() => {
                     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 700);
+                }, 500);
             }
         }
     });

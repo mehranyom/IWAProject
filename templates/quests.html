@@ -13,23 +13,23 @@
     <div class="col">
         <div class="card h-100 shadow-sm border-dark">
             {% if quest.image_filename %}
-                <img src="{{ url_for('static', filename='images/quests/' + quest.image_filename) }}" class="card-img-top" alt="{{ quest.title }}" style="height: 200px; object-fit: cover;">
+                <img src="{{ url_for('static', filename='images/quests/' + quest.image_filename) }}" class="card-img-top" alt="{{ quest.title }}">
             {% else %}
-                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center">
                     <span>No Image Available</span>
                 </div>
             {% endif %}
             
             <div class="card-body">
-                <h5 class="card-title text-primary">{{ quest.title }}</h5>
+                <h5 class="card-title">{{ quest.title }}</h5>
                 <div class="mb-2">
                     <span class="badge bg-danger">{{ quest.difficulty | title }}</span>
-                    <span class="badge bg-info text-dark">{{ quest.quest_type | title }}</span>
+                    <span class="badge bg-secondary text-dark">{{ quest.quest_type | title }}</span>
                 </div>
-                <p class="card-text text-truncate">{{ quest.description }}</p>
+                <p class="card-text text-truncate-2">{{ quest.description }}</p>
             </div>
             <div class="card-footer bg-transparent border-top-0 d-grid">
-                <a href="{{ url_for('quest_detail', quest_id=quest.QId) }}" class="btn btn-outline-primary">View Details & Sessions</a>
+                <a href="{{ url_for('quest_detail', quest_id=quest.QId) }}" class="btn btn-outline-dark mt-2">Details & Sessions</a>
             </div>
         </div>
     </div>

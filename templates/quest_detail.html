@@ -12,7 +12,6 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="display-5 mb-0">{{ quest.title }}</h1>
-            <a href="{{ url_for('all_quests') }}" class="btn btn-outline-secondary">← Back</a>
         </div>
 
         <!-- 1. Hero Image & Overlays Section -->
@@ -27,7 +26,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
                 <!-- Stat Overlays at the bottom of the image -->
                 <div class="hero-overlays">
                     <!-- Duration -->
-                    <div class="hero-stat" title="Duration" id="duration">
+                    <div class="badge bg-info hero-stat" title="Duration" id="duration">
                         <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                             <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
                             <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
@@ -36,7 +35,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
                     </div>
                     
                     <!-- Quest Type -->
-                    <div class="hero-stat" title="Quest Type" id="quest-type">
+                    <div class="badge bg-secondary hero-stat" title="Quest Type" id="quest-type">
                         <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                             <path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0"/>
                             <path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1m0 5.586 7 7L13.586 9l-7-7H2z"/>
@@ -45,7 +44,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
                     </div>
 
                     <!-- Difficulty -->
-                    <div class="hero-stat" title="Difficulty" id="difficulty">
+                    <div class="badge bg-danger hero-stat" title="Difficulty" id="difficulty">
                         <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                             <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.084.685C8.428 15.895 8.22 16 8 16s-.428-.105-.793-.281a7 7 0 0 1-1.084-.685 11.8 11.8 0 0 1-2.517-2.453C1.928 10.457.545 7.14 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
                             <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
@@ -59,7 +58,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
         <!-- 2. Description Section -->
         <div id="quest-description" class="quest-section quest-box">
             <h3 class="section-title border-bottom pb-2 mb-3">Lore & Objectives</h3>
-            <p class="fs-5" style="white-space: pre-wrap;">{{ quest.description }}</p>
+            <p class="fs-5">{{ quest.description }}</p>
         </div>
 
         <!-- 3. Sessions Section -->
@@ -80,7 +79,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
                             </svg>
                             {{ session.location }}
                         </p>
-                        <a href="{{ url_for('session_detail', session_id=session.SId) }}" class="btn btn-outline-success w-100 mt-auto">Join Party</a>
+                        <a href="{{ url_for('session_detail', session_id=session.SId) }}" class="btn btn-outline-success w-100 mt-auto">Join Session</a>
                     </div>
                 </div>
                 {% else %}
@@ -96,7 +95,7 @@ data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-root-margin="0px 0px -40%
     <!-- Sidebar / Table of Contents -->
     <div class="col-lg-3 col-md-4 d-none d-md-block">
         <!-- The sticky class and nav classes are standard Bootstrap -->
-        <nav id="toc-nav" class="sidebar-toc p-3 bg-light rounded border sticky-top" style="top: 100px;">
+        <nav id="toc-nav" class="sidebar-toc p-3 bg-light rounded border sticky-top">
             <h5 class="text-uppercase text-muted fs-6 mb-3 fw-bold">Contents</h5>
             <!-- Using standard Bootstrap nav-pills to interact with Scrollspy -->
             <ul class="nav nav-pills flex-column">

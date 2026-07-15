@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body {% block scrollspy %}{% endblock %}>
@@ -20,7 +21,6 @@
                     <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Guild Logo" id="logo" class="d-inline-block align-text-top me-2">
                 </a>
                 
-                
                 {% if not current_user.is_authenticated %}
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -31,18 +31,18 @@
                     <div class="dropdown d-lg-none ms-auto">
                         <a class="d-flex align-items-center text-decoration-none" href="#" id="mobileUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if current_user.avatar_filename %}
-                                <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle shadow-sm avatar-mobile">
                             {% else %}
-                                <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; background-color: #fff;">
+                                <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle shadow-sm avatar-mobile avatar-default">
                             {% endif %}
                         </a>
                         
-                        <ul class="dropdown-menu dropdown-menu-end shadow position-absolute mt-3" aria-labelledby="mobileUserDropdown" style="background-color: var(--surface-parchment); border: 1px solid var(--border-dim);">
-                            <li><h6 class="dropdown-header text-center text-light">Hi, {{ current_user.username }}</h6></li>
-                            <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow position-absolute mt-3 custom-dropdown-menu" aria-labelledby="mobileUserDropdown">
+                            <li><h6 class="dropdown-header text-center">Hi, {{ current_user.username }}</h6></li>
+                            <li><hr class="dropdown-divider custom-dropdown-divider"></li>
                             
                             <li class="px-3 mb-2">
-                                <a class="btn btn-primary w-100 btn-sm text-dark fw-bold" href="{{ url_for('all_quests') }}">Quests</a>
+                                <a class="btn btn-outline-dark w-100 fw-bold" href="{{ url_for('all_quests') }}">Quests</a>
                             </li>
                             
                             {% if current_user.role == 'Guild Master' %}
@@ -53,7 +53,7 @@
                             
                             <li><a class="dropdown-item text-light" href="{{ url_for('edit_profile') }}">Edit Information</a></li>
                             
-                            <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                            <li><hr class="dropdown-divider custom-dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                         </ul>
                     </div>
@@ -70,15 +70,15 @@
                             <li class="nav-item dropdown d-none d-lg-block">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center justify-content-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     {% if current_user.avatar_filename %}
-                                        <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{{ url_for('static', filename='images/avatars/' + current_user.avatar_filename) }}" class="rounded-circle me-2 avatar-desktop">
                                     {% else %}
-                                        <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover; background-color: #fff;">
+                                        <img src="{{ url_for('static', filename='images/avatars/davatar.jpg') }}" class="rounded-circle me-2 avatar-desktop avatar-default">
                                     {% endif %}
                                 </a>
                                 
-                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown" style="background-color: var(--surface-parchment); border: 1px solid var(--border-dim);">
-                                    <li><h6 class="dropdown-header text-center text-light">Hi, {{ current_user.username }}</h6></li>
-                                    <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow custom-dropdown-menu" aria-labelledby="userDropdown">
+                                    <li><h6 class="dropdown-header text-center">Hi, {{ current_user.username }}</h6></li>
+                                    <li><hr class="dropdown-divider custom-dropdown-divider"></li>
                                     
                                     {% if current_user.role == 'Guild Master' %}
                                         <li><a class="dropdown-item text-light" href="{{ url_for('gm_dashboard') }}">Master Hall</a></li>
@@ -88,7 +88,7 @@
                                     
                                     <li><a class="dropdown-item text-light" href="{{ url_for('edit_profile') }}">Edit Information</a></li>
                                     
-                                    <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
+                                    <li><hr class="dropdown-divider custom-dropdown-divider"></li>
                                     <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                                 </ul>
                             </li>

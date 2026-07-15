@@ -125,26 +125,29 @@
                                     <!-- Edit Day Modal -->
                                     <div class="modal fade" id="editDayModal{{ session.SId }}" tabindex="-1" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
+                                            <!-- Your custom modal-content styling will still apply here -->
                                             <div class="modal-content">
                                                 <form method="POST" action="{{ url_for('gm_edit_session_field', session_id=session.SId) }}">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                    
                                                     <div class="modal-header">
                                                         <h5 class="modal-title">Change Day</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
-                                                    <div class="mb-3">
-                                                        <!-- 1. Add the 'for' attribute -->
-                                                        <label for="daySelect{{ session.SId }}" class="form-label">Select New Day</label>
-                                                        
-                                                        <!-- 2. Add the matching 'id' attribute -->
-                                                        <select id="daySelect{{ session.SId }}" name="new_value" class="form-select" required>
-                                                            {% for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-                                                                <option value="{{ d }}" {% if session.day == d %}selected{% endif %}>{{ d }}</option>
-                                                            {% endfor %}
-                                                        </select>
+                                                    
+                                                    <!-- Wrap your input inside modal-body -->
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="daySelect{{ session.SId }}" class="form-label">Select New Day</label>
+                                                            <select id="daySelect{{ session.SId }}" name="new_value" class="form-select" required>
+                                                                {% for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                                                    <option value="{{ d }}" {% if session.day == d %}selected{% endif %}>{{ d }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
                                                     </div>
+                                                    
                                                     <div class="modal-footer">
-                                                        <!-- Target the Main Modal to go back instead of just closing -->
                                                         <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageSessionModal{{ session.SId }}">Back</button>
                                                         <button type="submit" class="btn btn-primary" name="update_type" value="day">Save Day</button>
                                                     </div>
