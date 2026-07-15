@@ -42,7 +42,7 @@
                             <li><hr class="dropdown-divider" style="border-color: var(--border-dim);"></li>
                             
                             <li class="px-3 mb-2">
-                                <a class="btn btn-primary w-100 btn-sm text-dark fw-bold" href="{{ url_for('index') }}">Sessions</a>
+                                <a class="btn btn-primary w-100 btn-sm text-dark fw-bold" href="{{ url_for('all_quests') }}">Quests</a>
                             </li>
                             
                             {% if current_user.role == 'Guild Master' %}
@@ -63,7 +63,7 @@
                     <ul class="navbar-nav align-items-lg-center">
                         
                         <li class="nav-item me-lg-3 mb-2 mb-lg-0 {% if current_user.is_authenticated %}d-none d-lg-block{% endif %}">
-                            <a class="btn btn-info w-100 text-dark fw-bold" href="{{ url_for('index') }}">Sessions</a>
+                            <a class="btn btn-info w-100 text-dark fw-bold" href="{{ url_for('all_quests') }}">Quests</a>
                         </li>
                     
                         {% if current_user.is_authenticated %}

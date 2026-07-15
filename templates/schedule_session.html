@@ -9,7 +9,7 @@
             </div>
             <div class="card-body p-4">
                 <form method="POST" action="{{ url_for('schedule_session') }}">
-                    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-4">
                         <label for="quest_id" class="form-label">Select Quest</label>
                         <select class="form-select" id="quest_id" name="quest_id" required>

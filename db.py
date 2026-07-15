@@ -135,26 +135,37 @@ def update_user_profile(user_id, new_username=None, new_password=None, new_avata
 
 # to be completed to meet only one GM constraint
 """This Function hashes the password and inserts a new user into the database."""
-def create_user(username, password, role):
+def create_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = 'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)'
-    # Securely hash the password before saving
+    
+    # 1. Check if the username already exists (ignoring case)
+    check_query = 'SELECT username FROM users WHERE LOWER(username) = LOWER(?)'
+    cursor.execute(check_query, (username,))
+    existing_user = cursor.fetchone()
+    
+    if existing_user:
+        # A match was found, so the username is taken
+        cursor.close()
+        conn.close()
+        return False
+
+    # 2. If it is unique, proceed with the insertion using their original casing
+    insert_query = 'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)'
     hashed_password = generate_password_hash(password)
     success = False
+    
     try:
-        cursor.execute(query, (username, hashed_password, role))
+        cursor.execute(insert_query, (username, hashed_password, 'Adventurer'))
         conn.commit()
         success = True
     except Exception as e:
-        print('ERROR', str(e)) # to be completed
-        # if something goes wrong: rollback
+        print('ERROR', str(e))
         conn.rollback()
 
     cursor.close()
     conn.close()
-
-        
+    
     return success
 
 """This functuin checks if a user exists and the password is correct."""

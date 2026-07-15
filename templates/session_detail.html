@@ -62,6 +62,7 @@
                 
                 {% else %}
                     <form method="POST" action="{{ url_for('session_detail', session_id=session.SId) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="mb-3">
                             <label for="party_role" class="form-label">Select Role</label>
                             <select class="form-select" id="party_role" name="party_role" required>

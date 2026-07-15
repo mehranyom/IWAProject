@@ -8,23 +8,19 @@
                 <h3 class="card-title text-center mb-4">Join the Guild</h3>
                 
                 <form method="POST" action="{{ url_for('register') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" pattern="[A-Za-z]{3,10}" minlength="3"
+                        maxlength="10" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="role" class="form-label">Account Type</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="" disabled selected>Select your path...</option>
-                            <option value="Adventurer">Adventurer</option>
-                            <option value="Guild Master">Guild Master</option>
-                        </select>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                               title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+                               required>
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-100">Register</button>

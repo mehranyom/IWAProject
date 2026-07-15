@@ -6,17 +6,19 @@ from flask_login import (
     logout_user,
     current_user,
 )
-from datetime import datetime, timedelta
 import db
 import util
 import os
 from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__)
 
 # Required by Flask for session management
 app.config['SECRET_KEY'] = 'a_very_secret_key_for_exam' 
+# Required by Flask for securing forms
+csrf = CSRFProtect(app)
 # File Upload Configuration
 UPLOAD_FOLDER = os.path.join('static', 'images', 'avatars')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -82,19 +84,14 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        role = request.form.get('role')
 
         # Back-end Validation
-        if not username or not password or not role:
+        if not username or not password:
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        if role not in [AD, GM]:
-            flash('Invalid role selected.', 'danger')
-            return redirect(url_for('register'))
-
         # Attempt to create the user
-        if db.create_user(username, password, role):
+        if db.create_user(username, password):
             flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('login'))
         else:

@@ -101,7 +101,6 @@
         
         <div class="col-md-2 d-flex gap-2">
             <button type="submit" class="btn btn-primary w-100">Filter</button>
-            <!-- <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">Reset</a> -->
         </div>
     </form>
 
@@ -151,7 +150,7 @@
     </span>
     {% endif %}
 
-    <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-danger ms-auto">Clear All</a>
+    <a href="{{ url_for('index', cleared='true') }}" class="btn btn-sm btn-outline-danger ms-auto">Clear All</a>
 </div>
 {% endif %}
     
