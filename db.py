@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from model import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -9,7 +10,11 @@ def get_db_connection():
     to return dictionary-like rows. This avoids writing repetitive connection code.
     Use of SQLite as a relational database for the back end is required.
     """
-    conn = sqlite3.connect('database.db')
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(BASE_DIR, 'database.db')
+
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 

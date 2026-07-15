@@ -21,12 +21,9 @@ csrf = CSRFProtect(app)
 
 # File Upload Configuration for profile avatars and quest promotional images.
 UPLOAD_FOLDER = os.path.join('static', 'images', 'avatars')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Helper function to check file extensions for uploaded images
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Simulated Current Time 
 # The application uses a simulated current day and time within a fictional week to test modifiable and non-modifiable participations.
@@ -434,7 +431,7 @@ def create_quest():
         image_filename = "dq.jpg" # Default fallback image if no file is uploaded
 
         # Safely handle and store the promotional image or illustration.
-        if image_file and image_file.filename != '' and allowed_file(image_file.filename):
+        if image_file and image_file.filename != '' and util.allowed_file(image_file.filename):
             original_filename = secure_filename(image_file.filename)
             image_filename = f"quest_{original_filename}"
             
