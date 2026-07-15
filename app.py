@@ -15,11 +15,11 @@ from flask_wtf.csrf import CSRFProtect
 app = Flask(__name__)
 
 # Required by Flask for session management
-app.config['SECRET_KEY'] = 'a_very_secret_key_for_exam' 
-# Required by Flask for securing forms to validate them on the back end[cite: 1].
+app.config['SECRET_KEY'] = '8f42a73054b17c43d03f0254c79893d5' 
+# Required by Flask for securing forms to validate them on the back end.
 csrf = CSRFProtect(app)
 
-# File Upload Configuration for profile avatars and quest promotional images[cite: 1].
+# File Upload Configuration for profile avatars and quest promotional images.
 UPLOAD_FOLDER = os.path.join('static', 'images', 'avatars')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -29,16 +29,16 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Simulated Current Time 
-# The application uses a simulated current day and time within a fictional week to test modifiable and non-modifiable participations[cite: 1].
+# The application uses a simulated current day and time within a fictional week to test modifiable and non-modifiable participations.
 SIMULATED_DAY = "Monday"
 SIMULATED_TIME = "11:00"
 
-# Constant variables defining the two types of registered users[cite: 1].
+# Constant variables defining the two types of registered users.
 GM = 'Guild Master'
 AD = 'Adventurer'
 
 # --- FLASK-LOGIN SETUP ---
-# Use of Flask-Login for authentication management as per technical requirements[cite: 1].
+# Use of Flask-Login for authentication management as per technical requirements.
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login' # Tells Flask where to send users if they need to log in
@@ -51,8 +51,8 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    # On the homepage, all users see a short version of the available quest program[cite: 1].
-    # Through specific filters, users can explore quest sessions by day, quest type, difficulty level, or available role[cite: 1].
+    # On the homepage, all users see a short version of the available quest program.
+    # Through specific filters, users can explore quest sessions by day, quest type, difficulty level, or available role.
     day_filter = request.args.get('day')
     type_filter = request.args.get('quest_type')
     difficulty_filter = request.args.get('difficulty')
@@ -85,11 +85,11 @@ def register():
         return redirect(url_for('index'))
         
     if request.method == 'POST':
-        # Registration requires a unique field used to identify the user, such as a username[cite: 1].
+        # Registration requires a unique field used to identify the user, such as a username.
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Back-end Validation for mandatory fields[cite: 1].
+        # Back-end Validation for mandatory fields.
         if not username or not password:
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
@@ -130,7 +130,7 @@ def edit_profile():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # To join a quest, an adventurer must be registered and logged in[cite: 1].
+    # To join a quest, an adventurer must be registered and logged in.
     if current_user.is_authenticated:
         return redirect(url_for('index'))
         
@@ -178,16 +178,16 @@ def quest_detail(quest_id):
 
 @app.route('/session/<int:session_id>', methods=['GET', 'POST'])
 def session_detail(session_id):
-    # By clicking on a quest session, users can view all detailed information[cite: 1].
+    # By clicking on a quest session, users can view all detailed information.
     session_data = db.get_session_details(session_id)
     if not session_data:
         flash("Quest session not found.", "danger")
         return redirect(url_for('index'))
 
-    # Check remaining places for Warrior, Mage, and Healer roles[cite: 1].
+    # Check remaining places for Warrior, Mage, and Healer roles.
     availability = db.get_role_availability(session_id)
 
-    # Calculate if the session has already passed based on the simulated current day and time[cite: 1].
+    # Calculate if the session has already passed based on the simulated current day and time.
     session_total = util.get_total_hours(session_data['day'], session_data['start_time'])
     current_total = util.get_total_hours(SIMULATED_DAY, SIMULATED_TIME)
     is_expired = session_total < current_total
@@ -214,19 +214,19 @@ def session_detail(session_id):
 @app.route('/profile')
 @login_required
 def profile():
-    # The profile page shows the adventurer's participations: quest title, day, time, location, role, and reserved places[cite: 1].
+    # The profile page shows the adventurer's participations: quest title, day, time, location, role, and reserved places.
     if current_user.role != AD:
         flash("Guild Masters have a different dashboard.", "info")
         return redirect(url_for('gm_dashboard'))
 
     raw_participations = db.get_user_participations(current_user.UId)
     
-    # Convert rows to dictionaries to add the 'is_modifiable' flag based on the 8-hour rule[cite: 1].
+    # Convert rows to dictionaries to add the 'is_modifiable' flag based on the 8-hour rule.
     participations = []
     total_places = 0
     for row in raw_participations:
         part_dict = dict(row)
-        # Quest participations can be modified only if the session starts more than 8 hours after the simulated time[cite: 1].
+        # Quest participations can be modified only if the session starts more than 8 hours after the simulated time.
         part_dict['is_modifiable'] = util.can_modify_session(
             row['day'], row['start_time'], SIMULATED_DAY, SIMULATED_TIME
         )
@@ -249,7 +249,7 @@ def cancel_booking(participation_id):
         flash("Participation record not found or unauthorized.", "danger")
         return redirect(url_for('profile'))
 
-    # 2. Re-verify the 8-hour cancellation rule on the backend to prevent malicious requests[cite: 1].
+    # 2. Re-verify the 8-hour cancellation rule on the backend to prevent malicious requests.
     if not util.can_modify_session(part['day'], part['start_time'], SIMULATED_DAY, SIMULATED_TIME):
         flash("Cannot cancel. This session starts in less than 8 hours.", "danger")
         return redirect(url_for('profile'))
@@ -280,12 +280,12 @@ def modify_booking(participation_id):
         flash("Participation record not found.", "danger")
         return redirect(url_for('profile'))
 
-    # Re-verify the 8-hour modification rule on the backend[cite: 1].
+    # Re-verify the 8-hour modification rule on the backend.
     if not util.can_modify_session(part['day'], part['start_time'], SIMULATED_DAY, SIMULATED_TIME):
         flash("Cannot modify. This session starts in less than 8 hours.", "danger")
         return redirect(url_for('profile'))
 
-    # Check capacity constraints for the session to ensure places aren't overbooked[cite: 1].
+    # Check capacity constraints for the session to ensure places aren't overbooked.
     availability = db.get_role_availability(part['SId'])
     
     # "Refund" the user's currently held places to the availability pool to accurately test new capacity
@@ -295,7 +295,7 @@ def modify_booking(participation_id):
         flash(f"Not enough places available for {new_role}.", "danger")
         return redirect(url_for('profile'))
         
-    # Each adventurer can join at most 3 quest sessions during the week[cite: 1].
+    # Each adventurer can join at most 3 quest sessions during the week.
     schedule = db.get_adventurer_schedule(current_user.UId)
     current_total_places = sum(task['places_reserved'] for task in schedule)
     
@@ -312,7 +312,7 @@ def modify_booking(participation_id):
 @app.route('/gm/dashboard')
 @login_required
 def gm_dashboard():
-    # Security Check: Ensure only the Guild Master can access this view[cite: 1].
+    # Security Check: Ensure only the Guild Master can access this view.
     if current_user.role != GM:
         flash("Access denied. Only Guild Masters can view this page.", "danger")
         return redirect(url_for('profile'))
@@ -320,7 +320,7 @@ def gm_dashboard():
     raw_stats = db.get_gm_dashboard_stats()
     quests_grouped = {}
 
-    # Data Processing & Grouping: The Guild Master profile page shows scheduled sessions grouped by their quests[cite: 1].
+    # Data Processing & Grouping: The Guild Master profile page shows scheduled sessions grouped by their quests.
     for row in raw_stats:
         qid = row['QId']
         
@@ -333,7 +333,7 @@ def gm_dashboard():
         
         # Only process and append session data if a session actually exists
         if row['SId'] is not None:
-            # Calculate dynamic statistics for the Guild Master (remaining places, most requested roles)[cite: 1].
+            # Calculate dynamic statistics for the Guild Master (remaining places, most requested roles).
             roles = {
                 'Warrior': row['warrior_res'], 
                 'Mage': row['mage_res'], 
@@ -348,7 +348,7 @@ def gm_dashboard():
                 most_requested = ", ".join([k for k, v in roles.items() if v == max_res])
 
             session_dict = dict(row)
-            # Total capacity is 9 places (4 Warrior + 3 Mage + 2 Healer)[cite: 1].
+            # Total capacity is 9 places (4 Warrior + 3 Mage + 2 Healer).
             session_dict['remaining_places'] = 9 - row['total_reserved'] 
             session_dict['most_requested'] = most_requested
             
@@ -363,7 +363,7 @@ def gm_cancel_session(session_id):
     if current_user.role != GM:
         return redirect(url_for('index'))
 
-    # A quest session can be cancelled only if no adventurer has joined it[cite: 1].
+    # A quest session can be cancelled only if no adventurer has joined it.
     success = db.cancel_session_if_empty(session_id)
     
     if success:
@@ -398,12 +398,12 @@ def gm_edit_session_field(session_id):
         location = session_data['location']
         duration = session_data['duration'] 
         
-        # When modifying, the system must prevent overlaps in the same day, time and location[cite: 1].
+        # When modifying, the system must prevent overlaps in the same day, time and location.
         if db.check_session_overlap(day, start_time, duration, location, exclude_session_id=session_id):
             flash(f"Overlap detected: The {location} is already booked on {day} around {start_time}.", "danger")
             return redirect(url_for('gm_dashboard'))
 
-    # Attempt the update using the DB function. Session modifications are allowed if no adventurer has joined[cite: 1].
+    # Attempt the update using the DB function. Session modifications are allowed if no adventurer has joined.
     success = db.update_single_session_field(session_id, update_type, new_value)
     
     if success:
@@ -417,13 +417,13 @@ def gm_edit_session_field(session_id):
 @app.route('/gm/create_quest', methods=['GET', 'POST'])
 @login_required
 def create_quest():
-    # The Guild Master can manage the weekly quest program and create new quests[cite: 1].
+    # The Guild Master can manage the weekly quest program and create new quests.
     if current_user.role != GM:
         flash("Access denied. Only Guild Masters can create quests.", "danger")
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        # Retrieve mandatory quest information: title, duration, type, difficulty, description, image[cite: 1].
+        # Retrieve mandatory quest information: title, duration, type, difficulty, description, image.
         title = request.form.get('title')
         duration = request.form.get('duration')
         quest_type = request.form.get('quest_type')
@@ -433,7 +433,7 @@ def create_quest():
         image_file = request.files.get('image_file')
         image_filename = "dq.jpg" # Default fallback image if no file is uploaded
 
-        # Safely handle and store the promotional image or illustration[cite: 1].
+        # Safely handle and store the promotional image or illustration.
         if image_file and image_file.filename != '' and allowed_file(image_file.filename):
             original_filename = secure_filename(image_file.filename)
             image_filename = f"quest_{original_filename}"
@@ -449,7 +449,7 @@ def create_quest():
             return redirect(url_for('create_quest'))
 
         db.create_quest(title, int(duration), quest_type, difficulty, description, image_filename)
-        # Once created, a quest cannot be modified[cite: 1].
+        # Once created, a quest cannot be modified.
         flash("Quest created successfully! It is now permanently recorded.", "success")
         return redirect(url_for('gm_dashboard'))
 
@@ -459,7 +459,7 @@ def create_quest():
 @app.route('/gm/schedule_session', methods=['GET', 'POST'])
 @login_required
 def schedule_session():
-    # The Guild Master can schedule related quest sessions[cite: 1].
+    # The Guild Master can schedule related quest sessions.
     if current_user.role != GM:
         flash("Access denied.", "danger")
         return redirect(url_for('index'))
@@ -481,7 +481,7 @@ def schedule_session():
         quest_data, _ = db.get_quest_and_sessions(quest_id)
         duration = quest_data['duration']
 
-        # Prevent overlaps in the same day, time and location so each location hosts one session at a time[cite: 1].
+        # Prevent overlaps in the same day, time and location so each location hosts one session at a time.
         if db.check_session_overlap(day, start_time, duration, location):
             flash(f"Overlap detected: The {location} is already booked on {day} around {start_time}.", "danger")
             return redirect(url_for('schedule_session'))

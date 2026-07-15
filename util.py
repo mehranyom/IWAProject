@@ -10,7 +10,7 @@ from app import allowed_file
 def has_time_overlap(new_session, schedule):
     """
     Calculates if a new session overlaps with an adventurer's existing schedule.
-    An adventurer cannot join two quest sessions that overlap in time[cite: 1].
+    An adventurer cannot join two quest sessions that overlap in time.
     """
     new_start = datetime.strptime(new_session['start_time'], '%H:%M')
     new_end = new_start + timedelta(minutes=new_session['duration'])
@@ -32,12 +32,12 @@ def has_time_overlap(new_session, schedule):
 def handle_booking_request(session_id, session_data, availability, current_day, current_time):
     """Processes all business logic and validation checks required for joining a quest."""
     
-    # To join a quest, an adventurer must be registered and logged in[cite: 1].
+    # To join a quest, an adventurer must be registered and logged in.
     if not current_user.is_authenticated:
         flash("You must be logged in to join a quest.", "warning")
         return redirect(url_for('login'))
         
-    # The Guild Master can browse the website like adventurers, but cannot join quest sessions[cite: 1].
+    # The Guild Master can browse the website like adventurers, but cannot join quest sessions.
     if current_user.role != 'Adventurer':
         flash("Guild Masters cannot join quest sessions.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
@@ -58,21 +58,21 @@ def handle_booking_request(session_id, session_data, availability, current_day, 
         flash("You can reserve at most 2 places per quest session.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
 
-    # Once all places for a role category are taken, it is no longer possible to join with that role[cite: 1].
+    # Once all places for a role category are taken, it is no longer possible to join with that role.
     if availability.get(party_role, 0) < places:
         flash(f"Not enough places available for the {party_role} role.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
 
     schedule = db.get_adventurer_schedule(current_user.UId)
     
-    # Each adventurer can reserve at most 2 places per session and join at most 3 sessions (total places) per week[cite: 1].
+    # Each adventurer can reserve at most 2 places per session and join at most 3 sessions (total places) per week.
     total_places_booked = sum(task['places_reserved'] for task in schedule)
     
     if total_places_booked + places > 3:
         flash(f"Weekly limit reached! You can only reserve {3 - total_places_booked} more place(s) this week.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
 
-    # Verify time constraints[cite: 1].
+    # Verify time constraints.
     if has_time_overlap(session_data, schedule):
         flash("This session overlaps in time with another quest you have joined.", "danger")
         return redirect(url_for('session_detail', session_id=session_id))
@@ -86,7 +86,7 @@ def handle_booking_request(session_id, session_data, availability, current_day, 
 def get_total_hours(day_str, time_str):
     """
     Converts a string representation of a day and time into absolute hours since Monday 00:00.
-    This enables easy arithmetic for determining past/future constraints in the simulated week[cite: 1].
+    This enables easy arithmetic for determining past/future constraints in the simulated week.
     """
     days = {
         "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
@@ -98,7 +98,7 @@ def get_total_hours(day_str, time_str):
 def can_modify_session(session_day, session_time, current_day, current_time):
     """
     Quest participations can be modified only if the related quest session starts 
-    more than 8 hours after the simulated current day and time[cite: 1].
+    more than 8 hours after the simulated current day and time.
     """
     session_total = get_total_hours(session_day, session_time)
     current_total = get_total_hours(current_day, current_time)

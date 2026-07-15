@@ -30,7 +30,7 @@
     
     <form method="GET" action="{{ url_for('index') }}" class="bg-light p-3 rounded align-items-end" id="filter-form">
         <div class="row g-3 align-items-end">
-            <!-- Existing Filters -->
+            
             <div class="col-md-2">
                 <label for="day" class="form-label">Day</label>
                 <select name="day" id="day" class="form-select">
@@ -66,30 +66,30 @@
                 </select>
             </div>
             
-            <!-- Custom Role Availability Dropdown -->
+            
             <div class="col-md-4">
                 <label class="form-label">Required Role Slots</label>
                 <div class="dropdown">
-                    <!-- Replaced btn classes with form-select to match the rest of the form -->
+                    
                     <button class="form-select text-start w-100" type="button" id="roleDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                         Select Roles & Places
                     </button>
                     
-                    <!-- Added custom-dropdown-menu to apply your dark theme -->
+                    
                     <div class="dropdown-menu p-3 w-100 custom-dropdown-menu" aria-labelledby="roleDropdown">
                         
-                        <!-- Warrior -->
+                       
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="fw-bold role-filter">Warrior</span>
                             <div class="input-group input-group-sm input-group-narrow">
                                 <button class="btn btn-outline-secondary btn-minus" type="button" data-target="warrior_places">-</button>
-                                <!-- Removed bg-white to let .form-control handle the dark styling -->
+                                
                                 <input type="number" name="warrior_places" id="warrior_places" class="form-control text-center" value="{{ warrior_places|default(0) }}" min="0" max="4" readonly>
                                 <button class="btn btn-outline-secondary btn-plus" type="button" data-target="warrior_places">+</button>
                             </div>
                         </div>
             
-                        <!-- Mage -->
+                        
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="fw-bold role-filter">Mage</span>
                             <div class="input-group input-group-sm input-group-narrow">
@@ -99,7 +99,7 @@
                             </div>
                         </div>
             
-                        <!-- Healer -->
+                       
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold role-filter">Healer</span>
                             <div class="input-group input-group-sm input-group-narrow">
@@ -122,7 +122,7 @@
     {% if day_filter or type_filter or difficulty_filter or warrior_places > 0 or mage_places > 0 or healer_places > 0 %}
     <div class="mb-4 p-3 bg-white border rounded d-flex flex-column gap-3">
     
-        <!-- Top Section: Label and Badges -->
+        
         <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="fw-bold me-2">Active Filters:</span>
             
@@ -169,7 +169,7 @@
             {% endif %}
         </div>
     
-        <!-- Bottom Section: Clear All Button -->
+        
         <div class="d-flex">
             <a href="{{ url_for('index', cleared='true') }}" class="btn btn-sm-1 btn-outline-danger">Clear All</a>
         </div>
@@ -178,15 +178,15 @@
 {% endif %}
     
     <section class="mt-4">
-        <!-- Using a namespace allows us to track the current day being printed across the loop iterations -->
+        
         {% set current_day = namespace(value=none) %}
         
         {% for session in sessions %}
-            <!-- Check if the day has changed. If it has, create a new day header. -->
+            
             {% if session.day != current_day.value %}
                 
                 {% if current_day.value != none %}
-                    </div> <!-- Close the previous day's row -->
+                    </div> 
                 {% endif %}
                 
                 <h3 class="mt-4 mb-3 border-bottom pb-2">{{ session.day }}</h3>
@@ -213,7 +213,7 @@
             </article>
             
             {% if loop.last %}
-                </div> <!-- Close the very last row -->
+                </div> 
             {% endif %}
             
         {% else %}

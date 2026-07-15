@@ -7,7 +7,7 @@ def get_db_connection():
     """
     Connects to the local SQLite database file and configures the connection
     to return dictionary-like rows. This avoids writing repetitive connection code.
-    Use of SQLite as a relational database for the back end is required[cite: 1].
+    Use of SQLite as a relational database for the back end is required.
     """
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
@@ -17,7 +17,7 @@ def get_db_connection():
 def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None, warrior_req=0, mage_req=0, healer_req=0):
     """
     Fetches sessions joined with quest info, applying optional filters.
-    Allows users to explore quest sessions by day, quest type, difficulty level, or available role[cite: 1].
+    Allows users to explore quest sessions by day, quest type, difficulty level, or available role.
     """
     conn = get_db_connection()
     
@@ -41,7 +41,7 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None,
         query += ' AND quests.difficulty = ?'
         params.append(difficulty_filter)
 
-    # Validate against the required places for each role category[cite: 1].
+    # Validate against the required places for each role category.
     capacities = {'Warrior': (4, warrior_req), 'Mage': (3, mage_req), 'Healer': (2, healer_req)}
     
     for role_name, (max_cap, req_places) in capacities.items():
@@ -55,7 +55,7 @@ def get_quest_program(day_filter=None, type_filter=None, difficulty_filter=None,
             '''
             params.extend([max_cap, role_name, req_places])
 
-    # Sort logically by Day of the Week, then by Time to present an ordered schedule[cite: 1].
+    # Sort logically by Day of the Week, then by Time to present an ordered schedule.
     query += '''
         ORDER BY 
         CASE sessions.day
@@ -134,7 +134,7 @@ def update_user_profile(user_id, new_username=None, new_password=None, new_avata
 def create_user(username, password):
     """
     Hashes the password and inserts a new registered user (Adventurer) into the database.
-    Registration requires a unique field (username) to identify the user[cite: 1].
+    Registration requires a unique field (username) to identify the user.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -149,7 +149,7 @@ def create_user(username, password):
         conn.close()
         return False
 
-    # 2. Insert as 'Adventurer' since standard registration is for adventurers[cite: 1].
+    # 2. Insert as 'Adventurer' since standard registration is for adventurers.
     insert_query = 'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)'
     hashed_password = generate_password_hash(password)
     success = False
@@ -192,7 +192,7 @@ def get_all_quests_details():
 def get_quest_and_sessions(quest_id):
     """
     Fetches a specific quest's details alongside its connected quest sessions, 
-    including day, starting time, and location[cite: 1].
+    including day, starting time, and location.
     """
     conn = get_db_connection()
     
@@ -239,7 +239,7 @@ def get_session_details(sid):
 def get_role_availability(sid):
     """
     Calculates how many places are left for each role category in a given session.
-    Each quest session supports Warrior (4), Mage (3), and Healer (2) roles[cite: 1].
+    Each quest session supports Warrior (4), Mage (3), and Healer (2) roles.
     """
     conn = get_db_connection()
     query = '''
@@ -251,7 +251,7 @@ def get_role_availability(sid):
     results = conn.execute(query, (sid,)).fetchall()
     conn.close()
 
-    # Base capacity constraints defined by the exam requirements[cite: 1].
+    # Base capacity constraints defined by the exam requirements.
     availability = {'Warrior': 4, 'Mage': 3, 'Healer': 2}
     
     # Subtract currently reserved places to find the remaining availability
@@ -266,7 +266,7 @@ def get_role_availability(sid):
 def get_adventurer_schedule(uid):
     """
     Fetches all sessions an adventurer has currently joined. 
-    Used to verify the 3-place weekly limit and check for time overlaps[cite: 1].
+    Used to verify the 3-place weekly limit and check for time overlaps.
     """
     conn = get_db_connection()
     query = '''
@@ -295,7 +295,7 @@ def join_session(sid, uid, party_role, places):
 
 
 def get_user_participations(user_id):
-    """Fetches all joined quests for a specific adventurer, ordered logically to display on their profile page[cite: 1]."""
+    """Fetches all joined quests for a specific adventurer, ordered logically to display on their profile page."""
     conn = get_db_connection()
     query = '''
         SELECT p.PId as participation_id, p.party_role, p.places_reserved,
@@ -359,7 +359,7 @@ def update_participation(participation_id, user_id, new_role, new_places):
 def get_gm_dashboard_stats():
     """
     Fetches all scheduled quest sessions grouped/linked by their respective quests,
-    along with participation statistics such as reserved places per role category[cite: 1].
+    along with participation statistics such as reserved places per role category.
     """
     conn = get_db_connection()
     
@@ -388,7 +388,7 @@ def get_gm_dashboard_stats():
 
 
 def cancel_session_if_empty(session_id):
-    """Deletes a session strictly if no adventurer has joined it[cite: 1]."""
+    """Deletes a session strictly if no adventurer has joined it."""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -407,7 +407,7 @@ def cancel_session_if_empty(session_id):
     return True
 
 def update_single_session_field(session_id, field_name, new_value):
-    """Updates a single session field (day, time, location) strictly if no adventurer has joined it[cite: 1]."""
+    """Updates a single session field (day, time, location) strictly if no adventurer has joined it."""
     # Strict whitelist to prevent SQL injection on column names
     allowed_fields = ['day', 'start_time', 'location']
     if field_name not in allowed_fields:
@@ -416,7 +416,7 @@ def update_single_session_field(session_id, field_name, new_value):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Verify participant count is exactly 0 before modifying[cite: 1].
+    # Verify participant count is exactly 0 before modifying.
     cursor.execute('SELECT COUNT(*) as count FROM participations WHERE SId = ?', (session_id,))
     if cursor.fetchone()['count'] > 0:
         conn.close()
@@ -431,7 +431,7 @@ def update_single_session_field(session_id, field_name, new_value):
 
 
 def create_quest(title, duration, quest_type, difficulty, description, image_filename):
-    """Inserts a new quest into the database. Once created, a quest cannot be modified[cite: 1]."""
+    """Inserts a new quest into the database. Once created, a quest cannot be modified."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
@@ -451,7 +451,7 @@ def get_all_quests_for_dropdown():
 def check_session_overlap(day, start_time, duration, location, exclude_session_id=None):
     """
     Returns True if the new session time window overlaps with any existing session at the same location.
-    The system must prevent overlaps so that each location hosts only one quest session at a time[cite: 1].
+    The system must prevent overlaps so that each location hosts only one quest session at a time.
     """
     conn = get_db_connection()
     

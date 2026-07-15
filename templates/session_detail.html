@@ -60,7 +60,7 @@
                 {% elif current_user.role == 'guild_master' %}
                     <div class="alert alert-warning">Guild Masters cannot join quests.</div>
                 
-                <!-- NEW CHECK: If the session has already passed -->
+                
                 {% elif is_expired %}
                     <div class="alert alert-danger text-center">This quest session has already passed.</div>
                     <button class="btn btn-secondary w-100" disabled>Session Expired</button>
